@@ -1,7 +1,6 @@
 package edu.ncsu.mas.platys.android.db.sensorhelper;
 
 import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -18,23 +17,12 @@ public class WifiAccessPointHelper extends OrmLiteSqliteOpenHelper {
 
   private static final String DATABASE_NAME = "wifi_scan_log.db";
 
-  private static final int DATABASE_VERSION = 3;
+  private static final int DATABASE_VERSION = 1;
 
   private Dao<WifiAccessPointDao, Integer> wifiApDao = null;
-  private static final AtomicInteger usageCounter = new AtomicInteger(0);
 
-  private static WifiAccessPointHelper helper = null;
-
-  private WifiAccessPointHelper(Context context) {
+  public WifiAccessPointHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
-  }
-
-  public static synchronized WifiAccessPointHelper getHelper(Context context) {
-    if (helper == null) {
-      helper = new WifiAccessPointHelper(context);
-    }
-    usageCounter.incrementAndGet();
-    return helper;
   }
 
   @Override
@@ -51,19 +39,7 @@ public class WifiAccessPointHelper extends OrmLiteSqliteOpenHelper {
   @Override
   public void onUpgrade(SQLiteDatabase db, ConnectionSource connectionSource, int oldVersion,
       int newVersion) {
-    try {
-      Log.i(WifiAccessPointHelper.class.getName(), "onUpgrade " + oldVersion + " to " + newVersion);
-      if (oldVersion == 1 && newVersion == 2) {
-        wifiApDao.executeRaw("ALTER TABLE wifi_scan_log_wfi ADD is_connected_wfi BOOLEAN ");
-        Log.i(WifiAccessPointHelper.class.getName(), "added a column is_connected_wfi");
-      } else if (oldVersion < 3 && newVersion == 3) {
-        TableUtils.dropTable(connectionSource, WifiAccessPointDao.class, true);
-        onCreate(db, connectionSource);
-      }
-    } catch (SQLException e) {
-      Log.e(WifiAccessPointHelper.class.getName(), "Can't upgrade database", e);
-      throw new RuntimeException(e);
-    }
+    // Do nothing for now.
   }
 
   public Dao<WifiAccessPointDao, Integer> getWifiAccessPointDao() throws SQLException {
@@ -75,10 +51,7 @@ public class WifiAccessPointHelper extends OrmLiteSqliteOpenHelper {
 
   @Override
   public void close() {
-    if (usageCounter.decrementAndGet() == 0) {
-      super.close();
-      wifiApDao = null;
-      helper = null;
-    }
+    super.close();
+    wifiApDao = null;
   }
 }
