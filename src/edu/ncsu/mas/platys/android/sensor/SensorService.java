@@ -23,14 +23,14 @@ public class SensorService extends Service {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    mSensorManager.sense("");
     return START_STICKY;
   }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
-
+    mSensorManager.cleanUp();
+    mSensorManager = null;
   }
 
 }
