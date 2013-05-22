@@ -1,33 +1,36 @@
 package edu.ncsu.mas.platys.android.sensor;
 
-import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
-import android.util.Log;
+import android.os.IBinder;
 
-public class SensorService extends IntentService {
-  
-  private WiFiAccessPointSensor mWiFiAccessPointSensor;
-  
-  public SensorService() {
-    super("SensorService");
-  }
-  
+public class SensorService extends Service {
+
+  private SensorManager mSensorManager = null;
+
   @Override
   public void onCreate() {
     super.onCreate();
-    mWiFiAccessPointSensor = new WiFiAccessPointSensor(this);
+    mSensorManager = new SensorManager(this);
+    mSensorManager.init();
   }
 
   @Override
-  protected void onHandleIntent(Intent intent) {
-    Log.i("Pradeep", "onHandleIntent");
-    mWiFiAccessPointSensor.sense();
+  public IBinder onBind(Intent intent) {
+    // No binding required.
+    return null;
   }
-  
+
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    mSensorManager.sense("");
+    return START_STICKY;
+  }
+
   @Override
   public void onDestroy() {
     super.onDestroy();
-    mWiFiAccessPointSensor.cleanUp();
+
   }
 
 }
