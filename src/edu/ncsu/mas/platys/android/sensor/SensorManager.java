@@ -1,44 +1,49 @@
 package edu.ncsu.mas.platys.android.sensor;
 
-import static java.util.concurrent.TimeUnit.*;
+import com.j256.ormlite.android.apptools.OpenHelperManager;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-
+import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor;
 import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor;
 import android.content.Context;
 
 public class SensorManager {
 
-  private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-  // TODO Understand the generic argument used here.
-  private ScheduledFuture<?> wifiSensorHandle;
-
   private Context mContext = null;
 
+  SensorDbHelper dbHelper = null;
+
   private WiFiAccessPointSensor mWiFiAccessPointSensor = null;
+  private BluetoothDeviceSensor mBluetoothSensor = null;
 
   public SensorManager(Context context) {
     mContext = context;
-    mWiFiAccessPointSensor = new WiFiAccessPointSensor(mContext);
+    mWiFiAccessPointSensor = new WiFiAccessPointSensor(mContext, getHelper());
+    mBluetoothSensor = new BluetoothDeviceSensor(mContext, getHelper());
   }
 
-  public void init() {
-    wifiSensorHandle = scheduler.scheduleAtFixedRate(new Runnable() {
-      @Override
-      public void run() {
-        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-        mWiFiAccessPointSensor.sense();
-      }
-    }, 10, 2 * 60, SECONDS);
+  private SensorDbHelper getHelper() {
+    if (dbHelper == null) {
+      dbHelper = OpenHelperManager.getHelper(mContext, SensorDbHelper.class);
+    }
+    return dbHelper;
   }
 
   public void close() {
-    wifiSensorHandle.cancel(true);
-    mWiFiAccessPointSensor.close();
-    mWiFiAccessPointSensor = null;
+    if (mWiFiAccessPointSensor != null) {
+      mWiFiAccessPointSensor.stopSensing();
+      mWiFiAccessPointSensor = null;
+    }
+
+    if (mBluetoothSensor != null) {
+      mBluetoothSensor.stopSensing();
+      mBluetoothSensor = null;
+    }
+
+    if (dbHelper != null) {
+      OpenHelperManager.releaseHelper();
+      dbHelper = null;
+    }
+
     mContext = null;
   }
 

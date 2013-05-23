@@ -12,7 +12,6 @@ public class SensorService extends Service {
   public void onCreate() {
     super.onCreate();
     mSensorManager = new SensorManager(this);
-    mSensorManager.init();
   }
 
   @Override
