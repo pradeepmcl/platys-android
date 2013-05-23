@@ -3,11 +3,6 @@ package edu.ncsu.mas.platys.android.sensor.instances;
 import java.sql.SQLException;
 import java.util.List;
 
-import edu.ncsu.mas.platys.android.sensor.GenericSensor;
-import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
-import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
-import edu.ncsu.mas.platys.common.sensordataobjects.WifiAccessPointData;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,8 +10,12 @@ import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import edu.ncsu.mas.platys.android.sensor.ISensor;
+import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
+import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
+import edu.ncsu.mas.platys.common.sensordata.WifiAccessPointData;
 
-public class WiFiAccessPointSensor implements GenericSensor {
+public class WiFiAccessPointSensor implements ISensor {
 
   private Context mContext = null;
   private WifiManager mWifiMgr = null;
@@ -46,7 +45,7 @@ public class WiFiAccessPointSensor implements GenericSensor {
           wifiApDaata.setIsConnected(true);
           try {
             mDatabaseHelper.getDao(PlatysSensorEnum.WIFI_ACCESS_POINT_SENSOR.getDataClass())
-                .create(wifiApDaata);
+            .create(wifiApDaata);
           } catch (SQLException e) {
             e.printStackTrace();
           }
@@ -57,12 +56,11 @@ public class WiFiAccessPointSensor implements GenericSensor {
 
   @Override
   public void sense() {
-    WifiManager wifi_mgr = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
-    wifi_mgr.startScan();
+    mWifiMgr.startScan();
   }
 
   @Override
-  public void cleanUp() {
+  public void close() {
     mContext.unregisterReceiver(wifiAccessPointReceiver);
     mDatabaseHelper.close();
     mDatabaseHelper = null;

@@ -35,9 +35,9 @@ public class SensorManager {
     }, 10, 2 * 60, SECONDS);
   }
 
-  public void cleanUp() {
+  public void close() {
     wifiSensorHandle.cancel(true);
-    mWiFiAccessPointSensor.cleanUp();
+    mWiFiAccessPointSensor.close();
     mWiFiAccessPointSensor = null;
     mContext = null;
   }

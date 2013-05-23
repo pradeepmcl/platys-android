@@ -29,7 +29,7 @@ public class SensorService extends Service {
   @Override
   public void onDestroy() {
     super.onDestroy();
-    mSensorManager.cleanUp();
+    mSensorManager.close();
     mSensorManager = null;
   }
 
