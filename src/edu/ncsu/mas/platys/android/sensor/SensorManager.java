@@ -19,6 +19,7 @@ public class SensorManager {
     mContext = context;
     mWiFiAccessPointSensor = new WiFiAccessPointSensor(mContext, getHelper());
     mBluetoothSensor = new BluetoothDeviceSensor(mContext, getHelper());
+    dbHelper.backup();
   }
 
   private SensorDbHelper getHelper() {

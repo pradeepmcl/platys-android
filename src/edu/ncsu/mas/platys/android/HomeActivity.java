@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 public class HomeActivity extends Activity {
 
@@ -13,6 +16,13 @@ public class HomeActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_home);
     startService(new Intent(this, SensorService.class));
+    Button tempButton = (Button) findViewById(R.id.tempButton);
+    tempButton.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View arg0) {
+        
+      }
+    });
   }
 
   @Override
