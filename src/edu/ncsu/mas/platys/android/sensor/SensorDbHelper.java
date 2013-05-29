@@ -9,7 +9,6 @@ import java.sql.SQLException;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Environment;
 import android.util.Log;
 
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
@@ -25,9 +24,6 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
   private static final int DATABASE_VERSION = 1;
 
   private Context mContext;
-
-  //private static final String DATABASE_PATH = "//data//edu.ncsu.mas.platys.android//databases//"
-  //    + DATABASE_NAME;
 
   private static final String BACKUP_PATH = "backup_sensor.db";
 
@@ -61,51 +57,31 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
     mContext = null;
   }
 
-  public void backup() {
-    Log.i("Pradeep", "Backing up");
-    File sd = Environment.getExternalStorageDirectory();
-    // File data = Environment.getDataDirectory();
-
+  public void backup(File backupDirectory) throws IOException {
     FileChannel src = null;
     FileChannel dst = null;
 
-    if (sd.canWrite()) {
+    if (backupDirectory.isDirectory() && backupDirectory.canWrite()) {
       try {
         File currentDB = mContext.getDatabasePath(DATABASE_NAME);
-        Log.i("Pradeep", currentDB.getAbsolutePath());
-        // File currentDB = new File(data, DATABASE_PATH);
-        // Log.i("Pradeep", currentDB.getAbsolutePath());
-        File backupDB = new File(sd, BACKUP_PATH);
+        File backupDB = new File(backupDirectory, BACKUP_PATH);
         if (currentDB.exists()) {
           src = new FileInputStream(currentDB).getChannel();
           dst = new FileOutputStream(backupDB).getChannel();
-          Log.i("Pradeep","About to transfer");
           dst.transferFrom(src, 0, src.size());
-        } else {
-          Log.i("Pradeep", "DB doesn't exist");
         }
       } catch (IOException e) {
-        e.printStackTrace();
+        Log.e(SensorDbHelper.class.getName(), "Can't backup database", e);
+        throw new RuntimeException(e);
       } finally {
         if (src != null) {
-          try {
-            src.close();
-          } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-          }
+          src.close();
         }
         if (dst != null) {
-          try {
-            dst.close();
-          } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-          }
+          dst.close();
         }
       }
-    } else {
-      Log.i("Pradeep", "Can't write to SD Card");
     }
   }
+  
 }
