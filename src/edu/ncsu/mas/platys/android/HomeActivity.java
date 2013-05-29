@@ -1,13 +1,13 @@
 package edu.ncsu.mas.platys.android;
 
-import edu.ncsu.mas.platys.android.sensor.SensorService;
-import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import edu.ncsu.mas.platys.android.sensor.SensorService;
 
 public class HomeActivity extends Activity {
 
@@ -20,7 +20,7 @@ public class HomeActivity extends Activity {
     tempButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View arg0) {
-        
+        // TODO
       }
     });
   }

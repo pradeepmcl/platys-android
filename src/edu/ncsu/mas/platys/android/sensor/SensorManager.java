@@ -1,10 +1,11 @@
 package edu.ncsu.mas.platys.android.sensor;
 
+import android.content.Context;
+
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor;
 import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor;
-import android.content.Context;
 
 public class SensorManager {
 
