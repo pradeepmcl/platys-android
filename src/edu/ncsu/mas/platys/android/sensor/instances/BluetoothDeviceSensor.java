@@ -50,7 +50,7 @@ public class BluetoothDeviceSensor implements ISensor {
 
   @Override
   public void stopSensing() {
-    mBluetoothSensorHandle.cancel(true);
+    mBluetoothSensorHandle.cancel(false);
     mContext.unregisterReceiver(bluetoothScanResultReceiver);
     mDbHelper = null;
     mBluetoothAdapter = null;

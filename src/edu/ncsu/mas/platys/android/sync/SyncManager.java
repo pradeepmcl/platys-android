@@ -1,7 +1,12 @@
 package edu.ncsu.mas.platys.android.sync;
 
-import java.io.FileOutputStream;
+import static java.util.concurrent.TimeUnit.MINUTES;
+
+import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
 import android.content.Context;
 import android.util.Log;
@@ -25,6 +30,10 @@ public class SyncManager {
 
   private final DbxAccountManager mDbxAcctMgr;
 
+  private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(1);
+  
+  private ScheduledFuture<?> syncMgrHandle;
+  
   private Context mContext = null;
   private SensorManager mSensorManager = null;
 
@@ -36,43 +45,121 @@ public class SyncManager {
   }
 
   public void close() {
+    syncMgrHandle.cancel(false);
     mSensorManager = null;
     mContext = null;
   }
+  
+  public void startSensorSync() {
+    syncMgrHandle = mScheduler.scheduleAtFixedRate(new Runnable() {
+      @Override
+      public void run() {
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        
+        final File sensorDbFile = mContext.getDatabasePath(mSensorManager.getHelper()
+            .getDatabaseName());
 
-  public synchronized void startSensorSync() {
-    if (mDbxAcctMgr.hasLinkedAccount()) {
-      FileOutputStream syncOutputStream = null;
-      try {
-        DbxFileSystem dbxFs = DbxFileSystem.forAccount(mDbxAcctMgr.getLinkedAccount());
-        DbxFile syncFile = dbxFs.create(new DbxPath(SENSOR_SYNC_DIR + System.currentTimeMillis()
-            + ".db"));
-        syncOutputStream = syncFile.getWriteStream();
-        mSensorManager.createSensorDbBackup(syncOutputStream);
-      } catch (Unauthorized e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } catch (InvalidPathException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } catch (DbxException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } finally {
-        if (syncOutputStream != null) {
+        if (mDbxAcctMgr.hasLinkedAccount() && sensorDbFile.length() != 0) {
+          // Step 1. Stop sensors.
+          Log.i(SyncManager.class.getName(), "Stopping sensors");
+          mSensorManager.stopSensors();
+
+          // Step 2. Copy database file.
+          DbxFile syncFile = null;
+          boolean success = true;
           try {
-            syncOutputStream.close();
-          } catch (IOException e) {
-            // TODO Auto-generated catch block
+            DbxFileSystem dbxFs = DbxFileSystem.forAccount(mDbxAcctMgr.getLinkedAccount());
+            syncFile = dbxFs.create(new DbxPath(SENSOR_SYNC_DIR + System.currentTimeMillis()
+                + ".db"));
+            syncFile.writeFromExistingFile(sensorDbFile, false);
+          } catch (Unauthorized e) {
+            success = false;
             e.printStackTrace();
+          } catch (InvalidPathException e) {
+            success = false;
+            e.printStackTrace();
+          } catch (DbxException e) {
+            success = false;
+            e.printStackTrace();
+          } catch (IOException e) {
+            success = false;
+            e.printStackTrace();
+          } finally {
+            syncFile.close();
+            if (success) {
+              Log.i(SyncManager.class.getName(), "Successful backup. Deleting local data");
+              mSensorManager.getHelper().truncateTables();
+            } else {
+              Log.i(SyncManager.class.getName(), "There was an exception during backup.");
+            }
           }
+
+          // Step 3. Start sensors.
+          Log.i(SyncManager.class.getName(), "Starting sensors");
+          mSensorManager.initSensors();
+
         }
       }
-    } else {
-      Log.i("Pradeep", "No linked account in Sync");
-    }
+    }, 30, 120, MINUTES);
   }
+
+  /*public synchronized void startSensorSync1() {
+    final File sensorDbFile = mContext
+        .getDatabasePath(mSensorManager.getHelper().getDatabaseName());
+    
+    if (mDbxAcctMgr.hasLinkedAccount() && sensorDbFile.length() != 0) {
+      //final ExecutorService backupTasks = Executors.newSingleThreadExecutor();
+
+      mScheduler.submit(new Runnable() {
+        @Override
+        public void run() {
+          Log.i(SyncManager.class.getName(), "Stopping sensors");
+          mSensorManager.stopSensors();
+        }
+      });
+
+      mScheduler.submit(new Runnable() {
+        @Override
+        public void run() {
+          DbxFile syncFile = null;
+          boolean success = true;
+          try {
+            DbxFileSystem dbxFs = DbxFileSystem.forAccount(mDbxAcctMgr.getLinkedAccount());
+            syncFile = dbxFs.create(new DbxPath(SENSOR_SYNC_DIR + System.currentTimeMillis()
+                + ".db"));
+            syncFile.writeFromExistingFile(sensorDbFile, false);
+          } catch (Unauthorized e) {
+            success = false;
+            e.printStackTrace();
+          } catch (InvalidPathException e) {
+            success = false;
+            e.printStackTrace();
+          } catch (DbxException e) {
+            success = false;
+            e.printStackTrace();
+          } catch (IOException e) {
+            success = false;
+            e.printStackTrace();
+          } finally {
+            syncFile.close();
+            if (success) {
+              Log.i(SyncManager.class.getName(), "Successful backup. Deleting local data");
+              mSensorManager.getHelper().truncateTables();
+            } else {
+              Log.i(SyncManager.class.getName(), "There was an exception during backup.");
+            }
+          }
+        }
+      });
+
+      mScheduler.submit(new Runnable() {
+        @Override
+        public void run() {
+          Log.i(SyncManager.class.getName(), "Starting sensors");
+          mSensorManager.initSensors();
+        }
+      });
+    }
+  }*/
+  
 }

@@ -1,9 +1,5 @@
 package edu.ncsu.mas.platys.android.sensor;
 
-import java.io.FileOutputStream;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import android.content.Context;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
@@ -36,34 +32,7 @@ public class SensorManager {
     mContext = null;
   }
 
-  public synchronized boolean createSensorDbBackup(final FileOutputStream writeStream) {
-    final ExecutorService backupTasks = Executors.newSingleThreadExecutor();
-
-    backupTasks.submit(new Runnable() {
-      @Override
-      public void run() {
-        stopSensors();
-      }
-    });
-
-    backupTasks.submit(new Runnable() {
-      @Override
-      public void run() {
-        getHelper().backup(writeStream);
-      }
-    });
-
-    backupTasks.submit(new Runnable() {
-      @Override
-      public void run() {
-        initSensors();
-      }
-    });
-
-    return true;
-  }
-
-  private void initSensors() {
+  public void initSensors() {
     mWiFiAccessPointSensor = new WiFiAccessPointSensor(mContext, getHelper());
     mWiFiAccessPointSensor.startSensing();
 
@@ -71,7 +40,7 @@ public class SensorManager {
     mBluetoothSensor.startSensing();
   }
 
-  private void stopSensors() {
+  public void stopSensors() {
     if (mWiFiAccessPointSensor != null) {
       mWiFiAccessPointSensor.stopSensing();
       mWiFiAccessPointSensor = null;
@@ -83,7 +52,7 @@ public class SensorManager {
     }
   }
 
-  private SensorDbHelper getHelper() {
+  public SensorDbHelper getHelper() {
     if (dbHelper == null) {
       dbHelper = OpenHelperManager.getHelper(mContext, SensorDbHelper.class);
     }

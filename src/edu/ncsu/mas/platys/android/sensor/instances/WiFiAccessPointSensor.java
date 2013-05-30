@@ -104,7 +104,7 @@ public class WiFiAccessPointSensor implements ISensor {
 
   @Override
   public void stopSensing() {
-    wifiSensorHandle.cancel(true);
+    wifiSensorHandle.cancel(false);
     mContext.unregisterReceiver(wifiAccessPointReceiver);
     mWifiMgr = null;
     mDbHelper = null;
