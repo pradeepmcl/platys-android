@@ -1,7 +1,5 @@
 package edu.ncsu.mas.platys.android;
 
-import com.dropbox.sync.android.DbxAccountManager;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +8,9 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+
+import com.dropbox.sync.android.DbxAccountManager;
+
 import edu.ncsu.mas.platys.android.sensor.SensorService;
 
 public class HomeActivity extends Activity {
@@ -44,9 +45,9 @@ public class HomeActivity extends Activity {
     super.onResume();
 
     if (mDbxAcctMgr.hasLinkedAccount()) {
-      mLinkToDropboxButton.setVisibility(View.VISIBLE);
-    } else {
       mLinkToDropboxButton.setVisibility(View.GONE);
+    } else {
+      mLinkToDropboxButton.setVisibility(View.VISIBLE);
     }
   }
 
@@ -71,7 +72,7 @@ public class HomeActivity extends Activity {
   }
 
   private void onClickLinkToDropbox() {
-    mDbxAcctMgr.startLink((Activity) this, REQUEST_LINK_TO_DBX);
+    mDbxAcctMgr.startLink(this, REQUEST_LINK_TO_DBX);
   }
 
 }

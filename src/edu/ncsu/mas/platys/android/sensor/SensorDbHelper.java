@@ -25,8 +25,6 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
 
   private Context mContext;
 
-  private static final String BACKUP_PATH = "backup_sensor.db";
-
   public SensorDbHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
     mContext = context;
@@ -57,31 +55,35 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
     mContext = null;
   }
 
-  public void backup(File backupDirectory) throws IOException {
+  public void backup(FileOutputStream writeStream) {
     FileChannel src = null;
     FileChannel dst = null;
 
-    if (backupDirectory.isDirectory() && backupDirectory.canWrite()) {
+    if (true) {
       try {
         File currentDB = mContext.getDatabasePath(DATABASE_NAME);
-        File backupDB = new File(backupDirectory, BACKUP_PATH);
         if (currentDB.exists()) {
           src = new FileInputStream(currentDB).getChannel();
-          dst = new FileOutputStream(backupDB).getChannel();
+          dst = writeStream.getChannel();
           dst.transferFrom(src, 0, src.size());
         }
       } catch (IOException e) {
         Log.e(SensorDbHelper.class.getName(), "Can't backup database", e);
         throw new RuntimeException(e);
       } finally {
-        if (src != null) {
-          src.close();
-        }
-        if (dst != null) {
-          dst.close();
+        try {
+          if (src != null) {
+            src.close();
+          }
+          if (dst != null) {
+            dst.close();
+          }
+        } catch (IOException e) {
+          Log.e(SensorDbHelper.class.getName(), "Can't close backup files");
+          throw new RuntimeException(e);
         }
       }
     }
   }
-  
+
 }

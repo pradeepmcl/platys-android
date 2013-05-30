@@ -1,7 +1,6 @@
 package edu.ncsu.mas.platys.android.sensor;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.FileOutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -28,7 +27,7 @@ public class SensorManager {
 
   public void close() {
     stopSensors();
-    
+
     if (dbHelper != null) {
       OpenHelperManager.releaseHelper();
       dbHelper = null;
@@ -36,43 +35,42 @@ public class SensorManager {
 
     mContext = null;
   }
-  
-  public synchronized boolean createSensorDbBackup(final File backupDir) {
+
+  public synchronized boolean createSensorDbBackup(final FileOutputStream writeStream) {
     final ExecutorService backupTasks = Executors.newSingleThreadExecutor();
-    
+
     backupTasks.submit(new Runnable() {
       @Override
       public void run() {
         stopSensors();
       }
     });
-    
+
     backupTasks.submit(new Runnable() {
       @Override
       public void run() {
-        try {
-          getHelper().backup(backupDir);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
+        getHelper().backup(writeStream);
       }
     });
-    
+
     backupTasks.submit(new Runnable() {
       @Override
       public void run() {
         initSensors();
       }
     });
-    
+
     return true;
   }
 
   private void initSensors() {
     mWiFiAccessPointSensor = new WiFiAccessPointSensor(mContext, getHelper());
+    mWiFiAccessPointSensor.startSensing();
+
     mBluetoothSensor = new BluetoothDeviceSensor(mContext, getHelper());
+    mBluetoothSensor.startSensing();
   }
-  
+
   private void stopSensors() {
     if (mWiFiAccessPointSensor != null) {
       mWiFiAccessPointSensor.stopSensing();
@@ -84,7 +82,7 @@ public class SensorManager {
       mBluetoothSensor = null;
     }
   }
-  
+
   private SensorDbHelper getHelper() {
     if (dbHelper == null) {
       dbHelper = OpenHelperManager.getHelper(mContext, SensorDbHelper.class);
