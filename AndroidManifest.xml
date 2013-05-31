@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
     <application
         android:allowBackup="true"
@@ -20,7 +22,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="edu.ncsu.mas.platys.android.HomeActivity"
+            android:name="edu.ncsu.mas.platys.android.PlatysActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,7 +31,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".sensor.SensorService" />
+        <service android:name="edu.ncsu.mas.platys.android.PlatysService" android:process=":PlatysService"/>
 
         <activity android:name="com.dropbox.sync.android.DbxAuthActivity" />
         <activity

@@ -11,9 +11,8 @@ import android.widget.Button;
 
 import com.dropbox.sync.android.DbxAccountManager;
 
-import edu.ncsu.mas.platys.android.sensor.SensorService;
 
-public class HomeActivity extends Activity {
+public class PlatysActivity extends Activity {
 
   private static final int REQUEST_LINK_TO_DBX = 0;
 
@@ -26,8 +25,8 @@ public class HomeActivity extends Activity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_home);
-    startService(new Intent(this, SensorService.class));
+    setContentView(R.layout.activity_platys);
+    startService(new Intent(this, PlatysService.class));
 
     mLinkToDropboxButton = (Button) findViewById(R.id.linkToDbxButton);
     mLinkToDropboxButton.setOnClickListener(new OnClickListener() {

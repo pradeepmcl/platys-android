@@ -1,11 +1,12 @@
-package edu.ncsu.mas.platys.android.sensor;
+package edu.ncsu.mas.platys.android;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import edu.ncsu.mas.platys.android.sensor.SensorManager;
 import edu.ncsu.mas.platys.android.sync.SyncManager;
 
-public class SensorService extends Service {
+public class PlatysService extends Service {
 
   private SensorManager mSensorManager = null;
   private SyncManager mSyncManager = null;
@@ -15,8 +16,6 @@ public class SensorService extends Service {
     super.onCreate();
     mSensorManager = new SensorManager(this);
     mSyncManager = new SyncManager(this, mSensorManager);
-    // TODO: Test only
-    mSyncManager.startSensorSync();
   }
 
   @Override

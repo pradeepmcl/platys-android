@@ -31,9 +31,9 @@ public class SyncManager {
   private final DbxAccountManager mDbxAcctMgr;
 
   private final ScheduledExecutorService mScheduler = Executors.newScheduledThreadPool(1);
-  
+
   private ScheduledFuture<?> syncMgrHandle;
-  
+
   private Context mContext = null;
   private SensorManager mSensorManager = null;
 
@@ -42,6 +42,7 @@ public class SyncManager {
     mSensorManager = sensorManager;
     mDbxAcctMgr = DbxAccountManager.getInstance(mContext.getApplicationContext(), mDbxAppKey,
         mDbxAppSecret);
+    startSensorSync();
   }
 
   public void close() {
@@ -49,13 +50,13 @@ public class SyncManager {
     mSensorManager = null;
     mContext = null;
   }
-  
-  public void startSensorSync() {
+
+  private void startSensorSync() {
     syncMgrHandle = mScheduler.scheduleAtFixedRate(new Runnable() {
       @Override
       public void run() {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-        
+
         final File sensorDbFile = mContext.getDatabasePath(mSensorManager.getHelper()
             .getDatabaseName());
 
@@ -106,7 +107,7 @@ public class SyncManager {
   /*public synchronized void startSensorSync1() {
     final File sensorDbFile = mContext
         .getDatabasePath(mSensorManager.getHelper().getDatabaseName());
-    
+
     if (mDbxAcctMgr.hasLinkedAccount() && sensorDbFile.length() != 0) {
       //final ExecutorService backupTasks = Executors.newSingleThreadExecutor();
 
@@ -161,5 +162,5 @@ public class SyncManager {
       });
     }
   }*/
-  
+
 }
