@@ -26,6 +26,7 @@ public class PlatysService extends Service {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
+    mSensorManager.initSensors();
     return START_STICKY;
   }
 

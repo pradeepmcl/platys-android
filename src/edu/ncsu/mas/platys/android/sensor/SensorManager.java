@@ -18,7 +18,6 @@ public class SensorManager {
 
   public SensorManager(Context context) {
     mContext = context;
-    initSensors();
   }
 
   public void close() {
@@ -33,10 +32,14 @@ public class SensorManager {
   }
 
   public void initSensors() {
-    mWiFiAccessPointSensor = new WiFiAccessPointSensor(mContext, getHelper());
+    if (mWiFiAccessPointSensor == null) {
+      mWiFiAccessPointSensor = new WiFiAccessPointSensor(mContext, getHelper());
+    }
     mWiFiAccessPointSensor.startSensing();
 
-    mBluetoothSensor = new BluetoothDeviceSensor(mContext, getHelper());
+    if (mBluetoothSensor == null) {
+      mBluetoothSensor = new BluetoothDeviceSensor(mContext, getHelper());
+    }
     mBluetoothSensor.startSensing();
   }
 
