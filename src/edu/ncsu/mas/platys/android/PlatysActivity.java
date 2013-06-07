@@ -26,7 +26,10 @@ public class PlatysActivity extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_platys);
-    startService(new Intent(this, PlatysService.class));
+    // startService(new Intent(this, PlatysService.class));
+    Intent platysIntent = new Intent(this, PlatysReceiver.class);
+    platysIntent.setAction("platys.intent.action.SENSE_ALL");
+    sendBroadcast(platysIntent);
 
     mLinkToDropboxButton = (Button) findViewById(R.id.linkToDbxButton);
     mLinkToDropboxButton.setOnClickListener(new OnClickListener() {
