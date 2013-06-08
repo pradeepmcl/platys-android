@@ -13,33 +13,46 @@ import android.util.Log;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
+import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor2;
 import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor2;
 import edu.ncsu.mas.platys.android.utils.WakefulThread;
 
 public class SensorPoller extends WakefulThread {
 
-  private static final String TAG = SensorPoller.class.getSimpleName();
+  private static final String TAG = "Platys" + SensorPoller.class.getSimpleName();
+  private static final String HANDLER_NAME = SensorPoller.class.getName();
 
   private final ExecutorService mThreadPool;
 
   private final List<Sensor> mSensorList = new ArrayList<Sensor>();
+  private final List<Boolean> mSensorFinishedList = new ArrayList<Boolean>();
   private Runnable mOnSensorTimeout = null;
-  private static int finishedSensorCount = 0;
 
   SensorDbHelper dbHelper = null;
 
   public SensorPoller(WakeLock lock, Context context) {
-    super(lock, "Pradeep");
-    finishedSensorCount = 0;
-    mSensorList.add(new WiFiAccessPointSensor2(context, sensorHandler, getDbHelper(context), 0));
+    super(lock, HANDLER_NAME);
+
+    mSensorList.add(new WiFiAccessPointSensor2(context, sensorResponseHandler,
+        getDbHelper(context), 0));
+    mSensorFinishedList.add(false);
+    mSensorList.add(new BluetoothDeviceSensor2(context, sensorResponseHandler,
+        getDbHelper(context), 1));
+    mSensorFinishedList.add(false);
 
     mThreadPool = Executors.newFixedThreadPool(mSensorList.size());
   }
 
-  private final Handler sensorHandler = new Handler() {
+  private final Handler sensorResponseHandler = new Handler() {
+
     @Override
     public void handleMessage(Message msg) {
-      if (msg.what == 101 && ++finishedSensorCount >= mSensorList.size()) {
+      if (msg.what == 101) {
+        Log.i(TAG, "Finished sensor index: " + msg.arg1);
+        mSensorFinishedList.add(msg.arg1, true);
+      }
+
+      if (!mSensorFinishedList.contains(false)) {
         Log.i(TAG, "All sensors finished; halting the poller.");
         removeCallbacks(mOnSensorTimeout);
         quit();
@@ -53,10 +66,11 @@ public class SensorPoller extends WakefulThread {
     mOnSensorTimeout = new Runnable() {
       @Override
       public void run() {
+        Log.i(TAG, "Some sensor must have timed out; halting the poller.");
         quit();
       }
     };
-    sensorHandler.postDelayed(mOnSensorTimeout, longestTimeOutValue);
+    sensorResponseHandler.postDelayed(mOnSensorTimeout, longestTimeOutValue);
 
     for (final Sensor sensor : mSensorList) {
       mThreadPool.execute(new Runnable() {

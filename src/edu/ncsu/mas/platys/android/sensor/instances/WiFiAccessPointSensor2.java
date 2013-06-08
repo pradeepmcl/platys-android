@@ -25,7 +25,7 @@ import edu.ncsu.mas.platys.common.sensordata.WifiAccessPointData;
 
 public class WiFiAccessPointSensor2 implements Sensor {
 
-  private static final String TAG = WiFiAccessPointSensor2.class.getSimpleName();
+  private static final String TAG = "Platys" + WiFiAccessPointSensor2.class.getSimpleName();
 
   private static final long DEFAULT_TIMEOUT = 120000; // two minutes
 
@@ -51,7 +51,8 @@ public class WiFiAccessPointSensor2 implements Sensor {
     }
     mContext.registerReceiver(wifiAccessPointReceiver, new IntentFilter(
         WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-
+    
+    Log.i(TAG, "Starting WiFi AP scan.");
     return mWifiMgr.startScan();
   }
 
@@ -71,6 +72,7 @@ public class WiFiAccessPointSensor2 implements Sensor {
   private final BroadcastReceiver wifiAccessPointReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(final Context context, Intent intent) {
+      Log.i(TAG, "Received WiFI AP list available broadcast");
       int result = 1;
       final long curTime = System.currentTimeMillis();
       final List<ScanResult> apList = mWifiMgr.getScanResults();
@@ -104,7 +106,7 @@ public class WiFiAccessPointSensor2 implements Sensor {
         });
       } catch (SQLException e) {
         result = 0;
-        Log.e(TAG, "Database insert failed", e);
+        Log.e(TAG, "Database operation failed.", e);
       } catch (Exception e) {
         result = 0;
         Log.e(TAG, "Unknown error", e);
