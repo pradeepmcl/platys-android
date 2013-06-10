@@ -12,8 +12,9 @@ import android.util.Log;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
-import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor2;
-import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor2;
+import edu.ncsu.mas.platys.android.PlatysService;
+import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor;
+import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor;
 
 public class SensorPoller extends HandlerThread {
 
@@ -48,11 +49,11 @@ public class SensorPoller extends HandlerThread {
       Sensor sensor = null;
       switch (sensorEnum) {
       case WiFiApSensor:
-        sensor = new WiFiAccessPointSensor2(mContext, mSensorResponseHandler,
+        sensor = new WiFiAccessPointSensor(mContext, mSensorResponseHandler,
             getDbHelper(mContext), i);
         break;
       case BluetoothDeviceSensor:
-        sensor = new BluetoothDeviceSensor2(mContext, mSensorResponseHandler,
+        sensor = new BluetoothDeviceSensor(mContext, mSensorResponseHandler,
             getDbHelper(mContext), i);
         break;
       }
@@ -76,14 +77,6 @@ public class SensorPoller extends HandlerThread {
 
       if (!(Arrays.asList(mSensorFinishedList).contains(false))) {
         Log.i(TAG, "All sensors finished; halting the poller.");
-
-        mSensorResponseHandler.removeCallbacks(mOnSensorTimeout);
-
-        Message msgToService = mServiceHandler.obtainMessage();
-        msgToService.arg1 = Sensor.MSG_FROM_SENSOR;
-        msgToService.arg2 = Sensor.SENSING_SUCCEEDED;
-        msgToService.sendToTarget();
-
         quit();
       }
     }
@@ -97,13 +90,10 @@ public class SensorPoller extends HandlerThread {
       @Override
       public void run() {
         Log.i(TAG, "Some sensor must have timed out; halting the poller.");
-        Message msgToService = mServiceHandler.obtainMessage();
-        msgToService.arg1 = Sensor.MSG_FROM_SENSOR;
-        msgToService.arg2 = Sensor.SENSING_FAILED;
-        msgToService.sendToTarget();
         quit();
       }
     };
+    
     mSensorResponseHandler.postDelayed(mOnSensorTimeout, getTimeOutValue());
 
     for (final Sensor sensor : mSensorList) {
@@ -134,6 +124,12 @@ public class SensorPoller extends HandlerThread {
       OpenHelperManager.releaseHelper();
       dbHelper = null;
     }
+    
+    Message msgToService = mServiceHandler.obtainMessage();
+    msgToService.what = PlatysService.PLATYS_MSG_SENSE_FINISHED;
+    msgToService.arg1 = Sensor.SENSING_SUCCEEDED;
+    msgToService.sendToTarget();
+    
   }
 
   private long getTimeOutValue() {

@@ -24,13 +24,17 @@ public class PlatysService extends Service {
 
   public static final String PLATYS_ACTION_SENSE = "platys.intent.action.START_SENSING";
   public static final String PLATYS_ACTION_SYNC = "platys.intent.action.START_SYNCING";
+  
+  public static final int PLATYS_MSG_SENSE_FINISHED = 0;
+  public static final int PLATYS_MSG_SYNC_FINISHED = 1;
+
 
   private static volatile PowerManager.WakeLock lockStatic = null;
 
   private Handler mServiceHandler;
 
-  private Runnable runningTask = null;
-  private final List<Runnable> pendingTasks = new LinkedList<Runnable>();
+  private Thread runningThread = null;
+  private final List<Thread> pendingThreads = new LinkedList<Thread>();
 
   synchronized private static PowerManager.WakeLock getLock(Context context) {
     if (lockStatic == null) {
@@ -74,7 +78,7 @@ public class PlatysService extends Service {
         if (!lock.isHeld() || (flags & START_FLAG_REDELIVERY) != 0) {
           lock.acquire();
         }
-        pendingTasks.add(new SensorPoller(getApplicationContext(), mServiceHandler, SensorEnum
+        pendingThreads.add(new SensorPoller(getApplicationContext(), mServiceHandler, SensorEnum
             .values()));
 
       } else if (action.equals(PLATYS_ACTION_SYNC)) {
@@ -82,7 +86,7 @@ public class PlatysService extends Service {
         if (!lock.isHeld() || (flags & START_FLAG_REDELIVERY) != 0) {
           lock.acquire();
         }
-        pendingTasks.add(new SyncHandler(getApplicationContext(), mServiceHandler));
+        pendingThreads.add(new Thread(new SyncHandler(getApplicationContext(), mServiceHandler)));
       }
 
       runTasks();
@@ -92,17 +96,23 @@ public class PlatysService extends Service {
   }
 
   private void runTasks() {
-    if (runningTask == null && !pendingTasks.isEmpty()) {
-      Log.i(TAG, "Running next tasks in the queue");
-      runningTask = pendingTasks.remove(0);
-      new Thread(runningTask).start();
-    } else {
-      Log.i(TAG, "No more tasks to run. Releasing the lock and stopping the service");
-      PowerManager.WakeLock lock = getLock(getApplicationContext());
-      if (lock.isHeld()) {
-        lock.release();
+    if (runningThread == null) {
+      if (pendingThreads.isEmpty()) {
+        Log.i(TAG, "No more tasks to run. Releasing the lock and stopping the service.");
+        PowerManager.WakeLock lock = getLock(getApplicationContext());
+        if (lock.isHeld()) {
+          lock.release();
+        }
+        stopSelf();
+
+      } else {
+        Log.i(TAG, "Running next thread in the queue.");
+        runningThread = pendingThreads.remove(0);
+        runningThread.start();
       }
-      stopSelf();
+    } else {
+      Log.i(TAG, "Waiting for running thread to finish.");
+      // Do nothing. Wait for running thread to finish.
     }
   }
 
@@ -110,12 +120,12 @@ public class PlatysService extends Service {
     @Override
     public void handleMessage(Message msg) {
       Log.i(TAG, "Received message " + msg.arg1);
-      if (msg.arg1 == Sensor.MSG_FROM_SENSOR && runningTask instanceof  SensorPoller) {
+      if (msg.what == PlatysService.PLATYS_MSG_SENSE_FINISHED) {
         Log.i(TAG, "SensorPoller finished.");
-        runningTask = null;
-      } else if (msg.arg1 == Sensor.MSG_FROM_SENSOR && runningTask instanceof SyncHandler) {
+        runningThread = null;
+      } else if (msg.what == PlatysService.PLATYS_MSG_SYNC_FINISHED) {
         Log.i(TAG, "SyncHandler finished.");
-        runningTask = null;
+        runningThread = null;
       }
 
       runTasks();

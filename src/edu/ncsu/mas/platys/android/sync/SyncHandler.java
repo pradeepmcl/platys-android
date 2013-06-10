@@ -17,6 +17,7 @@ import com.dropbox.sync.android.DbxPath;
 import com.dropbox.sync.android.DbxPath.InvalidPathException;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
+import edu.ncsu.mas.platys.android.PlatysService;
 import edu.ncsu.mas.platys.android.sensor.Sensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 
@@ -80,7 +81,7 @@ public class SyncHandler implements Runnable {
       }
 
       Message msgToService = mServiceHandler.obtainMessage();
-      msgToService.what = Sensor.MSG_FROM_SENSOR;
+      msgToService.what = PlatysService.PLATYS_MSG_SYNC_FINISHED;
       msgToService.sendToTarget();
     }
   }

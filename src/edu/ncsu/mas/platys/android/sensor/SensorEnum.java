@@ -1,11 +1,11 @@
 package edu.ncsu.mas.platys.android.sensor;
 
-import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor2;
-import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor2;
+import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor;
+import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor;
 
 public enum SensorEnum {
-  WiFiApSensor (WiFiAccessPointSensor2.class),
-  BluetoothDeviceSensor (BluetoothDeviceSensor2.class);
+  WiFiApSensor (WiFiAccessPointSensor.class),
+  BluetoothDeviceSensor (BluetoothDeviceSensor.class);
 
   private final Class<? extends Sensor> sensorClass;
   SensorEnum(Class<? extends Sensor> cls) {

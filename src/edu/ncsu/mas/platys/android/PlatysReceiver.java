@@ -16,14 +16,20 @@ public class PlatysReceiver extends BroadcastReceiver {
     String action = intent.getAction();
     Log.i(TAG, "Alarm received for " + action);
     PlatysService.startWakefulAction(context, intent);
-    // scheduleNext(context, 10 * 60 * 1000); // 10 minutes.
+    scheduleNext(context, intent);
   }
 
-  private void scheduleNext(Context context, long delayInMillis) {
-    AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-    Intent intent = new Intent(context, PlatysReceiver.class);
-    intent.setAction(PlatysService.PLATYS_ACTION_SENSE);
+  private void scheduleNext(Context context, Intent intent) {
+    long delayInMillis = 0;
+    if (intent.getAction().equals(PlatysService.PLATYS_ACTION_SENSE)) {
+      delayInMillis = 10 * 60 * 1000; // 10 minutes.
+    } else if (intent.getAction().equals(PlatysService.PLATYS_ACTION_SYNC)) {
+      delayInMillis = 60 * 60 * 1000; // 60 minutes.
+    } else {
+      return;
+    }
 
+    AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + delayInMillis,
         PendingIntent.getBroadcast(context, 0, intent, 0));
   }
