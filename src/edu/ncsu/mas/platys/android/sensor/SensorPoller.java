@@ -1,79 +1,113 @@
 package edu.ncsu.mas.platys.android.sensor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Message;
-import android.os.PowerManager.WakeLock;
 import android.util.Log;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor2;
 import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor2;
-import edu.ncsu.mas.platys.android.utils.WakefulThread;
 
-public class SensorPoller extends WakefulThread {
+public class SensorPoller extends HandlerThread {
 
   private static final String TAG = "Platys" + SensorPoller.class.getSimpleName();
-  private static final String HANDLER_NAME = SensorPoller.class.getName();
+  private static final String HANDLER_THREAD_NAME = SensorPoller.class.getName();
 
+  private final Context mContext;
   private final ExecutorService mThreadPool;
 
-  private final List<Sensor> mSensorList = new ArrayList<Sensor>();
-  private final List<Boolean> mSensorFinishedList = new ArrayList<Boolean>();
+  private final Sensor[] mSensorList;
+  private final Boolean[] mSensorFinishedList;
+
+  private final Handler mServiceHandler;
+
   private Runnable mOnSensorTimeout = null;
+  private SensorDbHelper dbHelper = null;
 
-  SensorDbHelper dbHelper = null;
+  public SensorPoller(Context context, Handler handler, SensorEnum[] sensorEnums) {
+    super(HANDLER_THREAD_NAME);
 
-  public SensorPoller(WakeLock lock, Context context) {
-    super(lock, HANDLER_NAME);
+    Log.i(TAG, "Creating SensorPoller");
 
-    mSensorList.add(new WiFiAccessPointSensor2(context, sensorResponseHandler,
-        getDbHelper(context), 0));
-    mSensorFinishedList.add(false);
-    mSensorList.add(new BluetoothDeviceSensor2(context, sensorResponseHandler,
-        getDbHelper(context), 1));
-    mSensorFinishedList.add(false);
+    mContext = context;
 
-    mThreadPool = Executors.newFixedThreadPool(mSensorList.size());
-  }
+    mServiceHandler = handler;
 
-  private final Handler sensorResponseHandler = new Handler() {
+    mSensorList = new Sensor[sensorEnums.length];
+    mSensorFinishedList = new Boolean[sensorEnums.length];
 
-    @Override
-    public void handleMessage(Message msg) {
-      if (msg.what == 101) {
-        Log.i(TAG, "Finished sensor index: " + msg.arg1);
-        mSensorFinishedList.add(msg.arg1, true);
+    for (int i = 0; i < sensorEnums.length; i++) {
+      SensorEnum sensorEnum = sensorEnums[i];
+      Sensor sensor = null;
+      switch (sensorEnum) {
+      case WiFiApSensor:
+        sensor = new WiFiAccessPointSensor2(mContext, mSensorResponseHandler,
+            getDbHelper(mContext), i);
+        break;
+      case BluetoothDeviceSensor:
+        sensor = new BluetoothDeviceSensor2(mContext, mSensorResponseHandler,
+            getDbHelper(mContext), i);
+        break;
       }
 
-      if (!mSensorFinishedList.contains(false)) {
+      if (sensor != null) {
+        mSensorList[i] = sensor;
+        mSensorFinishedList[i] = false;
+      }
+    }
+
+    mThreadPool = Executors.newFixedThreadPool(mSensorList.length);
+  }
+
+  private final Handler mSensorResponseHandler = new Handler() {
+    @Override
+    public void handleMessage(Message msg) {
+      if (msg.what == Sensor.MSG_FROM_SENSOR) {
+        Log.i(TAG, "Finished sensor index: " + msg.arg1);
+        mSensorFinishedList[msg.arg1] = true;
+      }
+
+      if (!(Arrays.asList(mSensorFinishedList).contains(false))) {
         Log.i(TAG, "All sensors finished; halting the poller.");
-        removeCallbacks(mOnSensorTimeout);
+
+        mSensorResponseHandler.removeCallbacks(mOnSensorTimeout);
+
+        Message msgToService = mServiceHandler.obtainMessage();
+        msgToService.arg1 = Sensor.MSG_FROM_SENSOR;
+        msgToService.arg2 = Sensor.SENSING_SUCCEEDED;
+        msgToService.sendToTarget();
+
         quit();
       }
     }
   };
 
   @Override
-  protected void onPreExecute() {
-    long longestTimeOutValue = findLongestTimeoutValue();
+  protected void onLooperPrepared() {
+    Log.i(TAG, "Preparing SensorPoller Looper");
+
     mOnSensorTimeout = new Runnable() {
       @Override
       public void run() {
         Log.i(TAG, "Some sensor must have timed out; halting the poller.");
+        Message msgToService = mServiceHandler.obtainMessage();
+        msgToService.arg1 = Sensor.MSG_FROM_SENSOR;
+        msgToService.arg2 = Sensor.SENSING_FAILED;
+        msgToService.sendToTarget();
         quit();
       }
     };
-    sensorResponseHandler.postDelayed(mOnSensorTimeout, longestTimeOutValue);
+    mSensorResponseHandler.postDelayed(mOnSensorTimeout, getTimeOutValue());
 
     for (final Sensor sensor : mSensorList) {
-      mThreadPool.execute(new Runnable() {
+      mThreadPool.submit(new Runnable() {
         @Override
         public void run() {
           sensor.startSensor();
@@ -83,6 +117,14 @@ public class SensorPoller extends WakefulThread {
   }
 
   @Override
+  public void run() {
+    try {
+      super.run();
+    } finally {
+      onPostExecute();
+    }
+  }
+
   protected void onPostExecute() {
     for (final Sensor sensor : mSensorList) {
       sensor.stopSensor();
@@ -92,11 +134,9 @@ public class SensorPoller extends WakefulThread {
       OpenHelperManager.releaseHelper();
       dbHelper = null;
     }
-
-    super.onPostExecute();
   }
 
-  private long findLongestTimeoutValue() {
+  private long getTimeOutValue() {
     long longestTimeoutValue = 0;
     for (final Sensor sensor : mSensorList) {
       if (longestTimeoutValue < sensor.getTimeoutValue()) {

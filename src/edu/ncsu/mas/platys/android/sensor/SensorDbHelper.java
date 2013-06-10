@@ -19,7 +19,7 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
   private static final String DATABASE_NAME = "sensor.db";
 
   private static final int DATABASE_VERSION = 1;
-  
+
   public SensorDbHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
   }
@@ -36,7 +36,7 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
       throw new RuntimeException(e);
     }
   }
-  
+
   @Override
   public void onUpgrade(SQLiteDatabase db, ConnectionSource connectionSource, int oldVersion,
       int newVersion) {
@@ -47,7 +47,7 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
   public void close() {
     super.close();
   }
-  
+
   public void truncateTables() {
     try {
       for (PlatysSensorEnum sensor : PlatysSensorEnum.values()) {
@@ -59,7 +59,7 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
       throw new RuntimeException(e);
     }
   }
-  
+
   private void addDbInstanceInfo() throws SQLException {
     Dao<SensorDbInstanceInfo, ?> instanceInfoDao = getDao(PlatysSensorEnum.SENSOR_DB_INSTANCE_INFO
         .getDataClass());

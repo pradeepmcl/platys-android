@@ -8,20 +8,21 @@ import android.content.Intent;
 import android.util.Log;
 
 public class PlatysReceiver extends BroadcastReceiver {
+
   private static final String TAG = PlatysReceiver.class.getSimpleName();
-  
+
   @Override
   public void onReceive(Context context, Intent intent) {
-    Log.i(TAG, "Alarm received.");
-    scheduleNext(context, 5 * 60 * 1000); // after 5 min.
-    PlatysService.startSensing(context, intent);
+    String action = intent.getAction();
+    Log.i(TAG, "Alarm received for " + action);
+    PlatysService.startWakefulAction(context, intent);
+    // scheduleNext(context, 10 * 60 * 1000); // 10 minutes.
   }
 
   private void scheduleNext(Context context, long delayInMillis) {
-    
     AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     Intent intent = new Intent(context, PlatysReceiver.class);
-    intent.setAction("platys.intent.action.SENSE_ALL");
+    intent.setAction(PlatysService.PLATYS_ACTION_SENSE);
 
     am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + delayInMillis,
         PendingIntent.getBroadcast(context, 0, intent, 0));

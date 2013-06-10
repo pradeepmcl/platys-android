@@ -11,7 +11,6 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-
 import edu.ncsu.mas.platys.android.sensor.Sensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
@@ -46,12 +45,12 @@ public class BluetoothDeviceSensor2 implements Sensor {
 
     mContext.registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(
         BluetoothDevice.ACTION_FOUND));
-    
+
     if (!mBluetoothAdapter.isDiscovering()) {
       Log.i(TAG, "Starting Bluetooth discovery");
       return mBluetoothAdapter.startDiscovery();
     }
-    
+
     return true;
   }
 
@@ -67,12 +66,12 @@ public class BluetoothDeviceSensor2 implements Sensor {
   public long getTimeoutValue() {
     return DEFAULT_TIMEOUT;
   }
-  
+
   private final BroadcastReceiver bluetoothDeviceFoundReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(final Context context, Intent intent) {
       Log.i(TAG, "Received Bluetooth device found broadcast");
-      int result = 1;
+      int result = Sensor.SENSING_SUCCEEDED;
       BluetoothDevice dev = intent
           .getParcelableExtra(android.bluetooth.BluetoothDevice.EXTRA_DEVICE);
       Short devRssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, (short) 0);
@@ -86,11 +85,11 @@ public class BluetoothDeviceSensor2 implements Sensor {
         mDbHelper.getDao(PlatysSensorEnum.BLUETOOTH_DEVICE_SENSOR.getDataClass()).create(
             btDeviceData);
       } catch (SQLException e) {
-        result = 0;
+        result = Sensor.SENSING_FAILED;
         Log.e(TAG, "Database operation failed.", e);
       }
 
-      Message msg = mHandler.obtainMessage(101, mSensorIndex, result);
+      Message msg = mHandler.obtainMessage(Sensor.MSG_FROM_SENSOR, mSensorIndex, result);
       msg.sendToTarget();
     }
   };

@@ -26,10 +26,10 @@ public class PlatysActivity extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_platys);
-    // startService(new Intent(this, PlatysService.class));
-    Intent platysIntent = new Intent(this, PlatysReceiver.class);
-    platysIntent.setAction("platys.intent.action.SENSE_ALL");
-    sendBroadcast(platysIntent);
+
+    Intent platysSenseIntent = new Intent(this, PlatysReceiver.class);
+    platysSenseIntent.setAction(PlatysService.PLATYS_ACTION_SENSE);
+    sendBroadcast(platysSenseIntent);
 
     mLinkToDropboxButton = (Button) findViewById(R.id.linkToDbxButton);
     mLinkToDropboxButton.setOnClickListener(new OnClickListener() {
@@ -48,6 +48,11 @@ public class PlatysActivity extends Activity {
 
     if (mDbxAcctMgr.hasLinkedAccount()) {
       mLinkToDropboxButton.setVisibility(View.GONE);
+
+      Intent platysSyncIntent = new Intent(this, PlatysReceiver.class);
+      platysSyncIntent.setAction(PlatysService.PLATYS_ACTION_SYNC);
+      sendBroadcast(platysSyncIntent);
+
     } else {
       mLinkToDropboxButton.setVisibility(View.VISIBLE);
     }

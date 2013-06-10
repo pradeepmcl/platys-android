@@ -54,15 +54,11 @@
             android:enabled="true"
             android:exported="false"
             android:label="Dropbox Sync" />
-        <receiver android:name="PlatysBootReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>
         <receiver android:name="PlatysReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
-                <action android:name="platys.intent.action.SENSE_ALL"/>
+                <action android:name="platys.intent.action.START_SENSING"/>
+                <action android:name="platys.intent.action.START_SYNCING"/>
             </intent-filter>
         </receiver>
     </application>

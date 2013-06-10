@@ -51,7 +51,7 @@ public class WiFiAccessPointSensor2 implements Sensor {
     }
     mContext.registerReceiver(wifiAccessPointReceiver, new IntentFilter(
         WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-    
+
     Log.i(TAG, "Starting WiFi AP scan.");
     return mWifiMgr.startScan();
   }
@@ -73,7 +73,7 @@ public class WiFiAccessPointSensor2 implements Sensor {
     @Override
     public void onReceive(final Context context, Intent intent) {
       Log.i(TAG, "Received WiFI AP list available broadcast");
-      int result = 1;
+      int result = Sensor.SENSING_SUCCEEDED;
       final long curTime = System.currentTimeMillis();
       final List<ScanResult> apList = mWifiMgr.getScanResults();
       final WifiInfo connectedAp = mWifiMgr.getConnectionInfo();
@@ -105,14 +105,14 @@ public class WiFiAccessPointSensor2 implements Sensor {
           }
         });
       } catch (SQLException e) {
-        result = 0;
+        result = Sensor.SENSING_FAILED;
         Log.e(TAG, "Database operation failed.", e);
       } catch (Exception e) {
-        result = 0;
+        result = Sensor.SENSING_FAILED;
         Log.e(TAG, "Unknown error", e);
       }
 
-      Message msg = mHandler.obtainMessage(101, mSensorIndex, result);
+      Message msg = mHandler.obtainMessage(Sensor.MSG_FROM_SENSOR, mSensorIndex, result);
       msg.sendToTarget();
     }
   };
