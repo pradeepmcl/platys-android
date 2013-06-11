@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.util.Log;
-import edu.ncsu.mas.platys.android.sensor.Sensor;
 import edu.ncsu.mas.platys.android.sensor.SensorEnum;
 import edu.ncsu.mas.platys.android.sensor.SensorPoller;
 import edu.ncsu.mas.platys.android.sync.SyncHandler;
@@ -24,7 +23,7 @@ public class PlatysService extends Service {
 
   public static final String PLATYS_ACTION_SENSE = "platys.intent.action.START_SENSING";
   public static final String PLATYS_ACTION_SYNC = "platys.intent.action.START_SYNCING";
-  
+
   public static final int PLATYS_MSG_SENSE_FINISHED = 0;
   public static final int PLATYS_MSG_SYNC_FINISHED = 1;
 

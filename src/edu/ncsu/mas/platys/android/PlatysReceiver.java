@@ -21,6 +21,9 @@ public class PlatysReceiver extends BroadcastReceiver {
 
   private void scheduleNext(Context context, Intent intent) {
     long delayInMillis = 0;
+    Intent intentToSchedule = new Intent(context, PlatysReceiver.class);
+    intentToSchedule.setAction(intent.getAction());
+
     if (intent.getAction().equals(PlatysService.PLATYS_ACTION_SENSE)) {
       delayInMillis = 10 * 60 * 1000; // 10 minutes.
     } else if (intent.getAction().equals(PlatysService.PLATYS_ACTION_SYNC)) {
@@ -31,7 +34,7 @@ public class PlatysReceiver extends BroadcastReceiver {
 
     AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + delayInMillis,
-        PendingIntent.getBroadcast(context, 0, intent, 0));
+        PendingIntent.getBroadcast(context, 0, intentToSchedule, 0));
   }
 
 }
