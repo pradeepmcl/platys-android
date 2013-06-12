@@ -11,7 +11,6 @@ import android.widget.Button;
 
 import com.dropbox.sync.android.DbxAccountManager;
 
-
 public class PlatysActivity extends Activity {
 
   private static final int REQUEST_LINK_TO_DBX = 0;
@@ -28,7 +27,9 @@ public class PlatysActivity extends Activity {
     setContentView(R.layout.activity_platys);
 
     Intent platysSenseIntent = new Intent(this, PlatysReceiver.class);
-    platysSenseIntent.setAction(PlatysService.PLATYS_ACTION_SENSE);
+    platysSenseIntent.setAction(PlatysReceiver.ACTION_PERIODIC);
+    platysSenseIntent.putExtra(PlatysReceiver.EXTRA_TASK,
+        PlatysReceiver.PlatysTask.PLATYS_TASK_SENSE.toString());
     sendBroadcast(platysSenseIntent);
 
     mLinkToDropboxButton = (Button) findViewById(R.id.linkToDbxButton);
@@ -50,7 +51,9 @@ public class PlatysActivity extends Activity {
       mLinkToDropboxButton.setVisibility(View.GONE);
 
       Intent platysSyncIntent = new Intent(this, PlatysReceiver.class);
-      platysSyncIntent.setAction(PlatysService.PLATYS_ACTION_SYNC);
+      platysSyncIntent.setAction(PlatysReceiver.ACTION_PERIODIC);
+      platysSyncIntent.putExtra(PlatysReceiver.EXTRA_TASK,
+          PlatysReceiver.PlatysTask.PLATYS_TASK_SYNC.toString());
       sendBroadcast(platysSyncIntent);
 
     } else {

@@ -24,15 +24,13 @@ public class PlatysService extends Service {
 
   private static final String LOCK_NAME_STATIC = "edu.ncsu.mas.platys.android.PlatysService";
 
-  public static final String PLATYS_ACTION_SENSE = "platys.intent.action.START_SENSING";
-  public static final String PLATYS_ACTION_SYNC = "platys.intent.action.START_SYNCING";
-
   public static final int PLATYS_MSG_SENSE_FINISHED = 0;
   public static final int PLATYS_MSG_SYNC_FINISHED = 1;
 
   private static volatile PowerManager.WakeLock lockStatic = null;
 
-  private Handler mServiceHandler;
+  private Handler mServiceHandler = null;
+  private SensorDbHelper mSensorDbHelper = null;
 
   private Thread runningThread = null;
   private final List<Thread> pendingThreads = new LinkedList<Thread>();
@@ -58,6 +56,7 @@ public class PlatysService extends Service {
   public void onCreate() {
     super.onCreate();
     mServiceHandler = new PlatysServiceHandler();
+    mSensorDbHelper = OpenHelperManager.getHelper(getApplicationContext(), SensorDbHelper.class);
   }
 
   @Override
@@ -69,29 +68,35 @@ public class PlatysService extends Service {
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     if (intent != null) {
-      String action = intent.getAction();
-      Log.i(TAG, "Starting PlatysSerice for action: " + action);
+      String actionName = intent.getAction();
+      Log.i(TAG, "Starting PlatysSerice for action: " + actionName);
+
+      String taskName = intent.getStringExtra(PlatysReceiver.EXTRA_TASK);
+      PlatysReceiver.PlatysTask platysTask = PlatysReceiver.PlatysTask.valueOf(taskName);
 
       PowerManager.WakeLock lock = getLock(this.getApplicationContext());
+      if (!lock.isHeld() || (flags & START_FLAG_REDELIVERY) != 0) {
+        lock.acquire();
+      }
 
-      if (action.equals(PLATYS_ACTION_SENSE)) {
+      if (mSensorDbHelper == null || !mSensorDbHelper.isOpen()) {
+        mSensorDbHelper = OpenHelperManager
+            .getHelper(getApplicationContext(), SensorDbHelper.class);
+      }
+
+      switch (platysTask) {
+      case PLATYS_TASK_SENSE:
         Log.i(TAG, "Perform Platys sense action.");
-        if (!lock.isHeld() || (flags & START_FLAG_REDELIVERY) != 0) {
-          lock.acquire();
-        }
-        
         pendingThreads.add(new SensorPoller(getApplicationContext(), mServiceHandler,
-            OpenHelperManager.getHelper(getApplicationContext(), SensorDbHelper.class), 
-            SensorEnum.values()));
-
-      } else if (action.equals(PLATYS_ACTION_SYNC)) {
+            mSensorDbHelper, SensorEnum.values()));
+        break;
+      case PLATYS_TASK_SYNC:
         Log.i(TAG, "Perform Platys sync action.");
-        if (!lock.isHeld() || (flags & START_FLAG_REDELIVERY) != 0) {
-          lock.acquire();
-        }
-        
         pendingThreads.add(new Thread(new DbxSyncer(getApplicationContext(), mServiceHandler,
             OpenHelperManager.getHelper(getApplicationContext(), SensorDbHelper.class))));
+        break;
+      default:
+        break;
       }
 
       runTasks();
@@ -108,7 +113,7 @@ public class PlatysService extends Service {
         if (lock.isHeld()) {
           lock.release();
         }
-        
+
         stopSelf();
 
       } else {
@@ -126,12 +131,11 @@ public class PlatysService extends Service {
     @Override
     public void handleMessage(Message msg) {
       Log.i(TAG, "Received message " + msg.arg1);
-      
+
       if (msg.what == PlatysService.PLATYS_MSG_SENSE_FINISHED) {
         Log.i(TAG, "SensorPoller finished.");
-        OpenHelperManager.releaseHelper();
         runningThread = null;
-        
+
       } else if (msg.what == PlatysService.PLATYS_MSG_SYNC_FINISHED) {
         Log.i(TAG, "SyncHandler finished.");
         OpenHelperManager.releaseHelper();
@@ -145,6 +149,7 @@ public class PlatysService extends Service {
   @Override
   public void onDestroy() {
     super.onDestroy();
+    OpenHelperManager.releaseHelper();
   }
 
 }
