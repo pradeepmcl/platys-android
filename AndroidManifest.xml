@@ -54,6 +54,7 @@
             android:enabled="true"
             android:exported="false"
             android:label="Dropbox Sync" />
+        
         <receiver android:name="PlatysReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>

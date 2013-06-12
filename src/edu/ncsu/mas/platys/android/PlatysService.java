@@ -3,6 +3,8 @@ package edu.ncsu.mas.platys.android;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.j256.ormlite.android.apptools.OpenHelperManager;
+
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -11,9 +13,10 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.util.Log;
+import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.android.sensor.SensorEnum;
 import edu.ncsu.mas.platys.android.sensor.SensorPoller;
-import edu.ncsu.mas.platys.android.sync.SyncHandler;
+import edu.ncsu.mas.platys.android.sync.DbxSyncer;
 
 public class PlatysService extends Service {
 
@@ -26,7 +29,6 @@ public class PlatysService extends Service {
 
   public static final int PLATYS_MSG_SENSE_FINISHED = 0;
   public static final int PLATYS_MSG_SYNC_FINISHED = 1;
-
 
   private static volatile PowerManager.WakeLock lockStatic = null;
 
@@ -77,15 +79,19 @@ public class PlatysService extends Service {
         if (!lock.isHeld() || (flags & START_FLAG_REDELIVERY) != 0) {
           lock.acquire();
         }
-        pendingThreads.add(new SensorPoller(getApplicationContext(), mServiceHandler, SensorEnum
-            .values()));
+        
+        pendingThreads.add(new SensorPoller(getApplicationContext(), mServiceHandler,
+            OpenHelperManager.getHelper(getApplicationContext(), SensorDbHelper.class), 
+            SensorEnum.values()));
 
       } else if (action.equals(PLATYS_ACTION_SYNC)) {
         Log.i(TAG, "Perform Platys sync action.");
         if (!lock.isHeld() || (flags & START_FLAG_REDELIVERY) != 0) {
           lock.acquire();
         }
-        pendingThreads.add(new Thread(new SyncHandler(getApplicationContext(), mServiceHandler)));
+        
+        pendingThreads.add(new Thread(new DbxSyncer(getApplicationContext(), mServiceHandler,
+            OpenHelperManager.getHelper(getApplicationContext(), SensorDbHelper.class))));
       }
 
       runTasks();
@@ -102,6 +108,7 @@ public class PlatysService extends Service {
         if (lock.isHeld()) {
           lock.release();
         }
+        
         stopSelf();
 
       } else {
@@ -119,11 +126,15 @@ public class PlatysService extends Service {
     @Override
     public void handleMessage(Message msg) {
       Log.i(TAG, "Received message " + msg.arg1);
+      
       if (msg.what == PlatysService.PLATYS_MSG_SENSE_FINISHED) {
         Log.i(TAG, "SensorPoller finished.");
+        OpenHelperManager.releaseHelper();
         runningThread = null;
+        
       } else if (msg.what == PlatysService.PLATYS_MSG_SYNC_FINISHED) {
         Log.i(TAG, "SyncHandler finished.");
+        OpenHelperManager.releaseHelper();
         runningThread = null;
       }
 

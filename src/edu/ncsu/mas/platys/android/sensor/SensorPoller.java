@@ -10,8 +10,6 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 
-import com.j256.ormlite.android.apptools.OpenHelperManager;
-
 import edu.ncsu.mas.platys.android.PlatysService;
 import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor;
 import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor;
@@ -26,20 +24,20 @@ public class SensorPoller extends HandlerThread {
 
   private final Sensor[] mSensorList;
   private final Boolean[] mSensorFinishedList;
-
-  private final Handler mServiceHandler;
-
   private Runnable mOnSensorTimeout = null;
-  private SensorDbHelper dbHelper = null;
+  
+  private final Handler mServiceHandler;
+  private final SensorDbHelper mDbHelper;
 
-  public SensorPoller(Context context, Handler handler, SensorEnum[] sensorEnums) {
+  public SensorPoller(Context context, Handler handler, SensorDbHelper dbHelper,
+      SensorEnum[] sensorEnums) {
     super(HANDLER_THREAD_NAME);
 
     Log.i(TAG, "Creating SensorPoller");
 
     mContext = context;
-
     mServiceHandler = handler;
+    mDbHelper = dbHelper;
 
     mSensorList = new Sensor[sensorEnums.length];
     mSensorFinishedList = new Boolean[sensorEnums.length];
@@ -49,12 +47,10 @@ public class SensorPoller extends HandlerThread {
       Sensor sensor = null;
       switch (sensorEnum) {
       case WiFiApSensor:
-        sensor = new WiFiAccessPointSensor(mContext, mSensorResponseHandler,
-            getDbHelper(mContext), i);
+        sensor = new WiFiAccessPointSensor(mContext, mSensorResponseHandler, mDbHelper, i);
         break;
       case BluetoothDeviceSensor:
-        sensor = new BluetoothDeviceSensor(mContext, mSensorResponseHandler,
-            getDbHelper(mContext), i);
+        sensor = new BluetoothDeviceSensor(mContext, mSensorResponseHandler, mDbHelper, i);
         break;
       }
 
@@ -73,6 +69,7 @@ public class SensorPoller extends HandlerThread {
       if (msg.what == Sensor.MSG_FROM_SENSOR) {
         Log.i(TAG, "Finished sensor index: " + msg.arg1);
         mSensorFinishedList[msg.arg1] = true;
+        mSensorList[msg.arg1].stopSensor();
       }
 
       if (!(Arrays.asList(mSensorFinishedList).contains(false))) {
@@ -93,7 +90,7 @@ public class SensorPoller extends HandlerThread {
         quit();
       }
     };
-    
+
     mSensorResponseHandler.postDelayed(mOnSensorTimeout, getTimeOutValue());
 
     for (final Sensor sensor : mSensorList) {
@@ -116,20 +113,10 @@ public class SensorPoller extends HandlerThread {
   }
 
   protected void onPostExecute() {
-    for (final Sensor sensor : mSensorList) {
-      sensor.stopSensor();
-    }
-
-    if (dbHelper != null) {
-      OpenHelperManager.releaseHelper();
-      dbHelper = null;
-    }
-    
     Message msgToService = mServiceHandler.obtainMessage();
     msgToService.what = PlatysService.PLATYS_MSG_SENSE_FINISHED;
     msgToService.arg1 = Sensor.SENSING_SUCCEEDED;
     msgToService.sendToTarget();
-    
   }
 
   private long getTimeOutValue() {
@@ -142,10 +129,4 @@ public class SensorPoller extends HandlerThread {
     return longestTimeoutValue;
   }
 
-  private SensorDbHelper getDbHelper(Context context) {
-    if (dbHelper == null) {
-      dbHelper = OpenHelperManager.getHelper(context, SensorDbHelper.class);
-    }
-    return dbHelper;
-  }
 }

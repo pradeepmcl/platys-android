@@ -15,15 +15,13 @@ import com.dropbox.sync.android.DbxFile;
 import com.dropbox.sync.android.DbxFileSystem;
 import com.dropbox.sync.android.DbxPath;
 import com.dropbox.sync.android.DbxPath.InvalidPathException;
-import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import edu.ncsu.mas.platys.android.PlatysService;
-import edu.ncsu.mas.platys.android.sensor.Sensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 
-public class SyncHandler implements Runnable {
+public class DbxSyncer implements Runnable {
 
-  private static final String TAG = "Platys" + SyncHandler.class.getSimpleName();
+  private static final String TAG = "Platys" + DbxSyncer.class.getSimpleName();
 
   private static final String SENSOR_SYNC_DIR = "/SensorData/";
 
@@ -33,13 +31,14 @@ public class SyncHandler implements Runnable {
   private final DbxAccountManager mDbxAcctMgr;
 
   private final Context mContext;
-  private SensorDbHelper sensorDbHelper = null;
   private final Handler mServiceHandler;
+  private final SensorDbHelper mSensorDbHelper;
 
-  public SyncHandler(Context context, Handler serviceHandler) {
+  public DbxSyncer(Context context, Handler serviceHandler, SensorDbHelper sensorDbHelper) {
     Log.i(TAG, "Creating SyncHandler.");
     mContext = context;
     mServiceHandler = serviceHandler;
+    mSensorDbHelper = sensorDbHelper;
 
     mDbxAcctMgr = DbxAccountManager.getInstance(mContext.getApplicationContext(), mDbxAppKey,
         mDbxAppSecret);
@@ -48,18 +47,17 @@ public class SyncHandler implements Runnable {
   @Override
   public void run() {
     Log.i(TAG, "Running SyncHandler.");
-    final File sensorDbFile = mContext.getDatabasePath(getSensorDbHelper().getDatabaseName());
+    final File sensorDbFile = mContext.getDatabasePath(mSensorDbHelper.getDatabaseName());
 
     DbxFile syncFile = null;
-    boolean backupSuccess = false;
-    boolean deleteSuccess = false;
+    int backupSuccess = 0;
+
     try {
       if (mDbxAcctMgr.hasLinkedAccount() && sensorDbFile.length() != 0) {
         DbxFileSystem dbxFs = DbxFileSystem.forAccount(mDbxAcctMgr.getLinkedAccount());
         syncFile = dbxFs.create(new DbxPath(SENSOR_SYNC_DIR + System.currentTimeMillis() + ".db"));
-        syncFile.writeFromExistingFile(sensorDbFile, false);
-        backupSuccess = true;
-        deleteSuccess = sensorDbFile.delete();
+        syncFile.writeFromExistingFile(sensorDbFile, true); // Steal file
+        backupSuccess = 1;
       }
     } catch (Unauthorized e) {
       Log.e(TAG, "Unauthorized", e);
@@ -70,27 +68,16 @@ public class SyncHandler implements Runnable {
     } catch (IOException e) {
       Log.e(TAG, "I/O Exception", e);
     } finally {
-      Log.i(TAG, "Finishing backup. " + backupSuccess + ", " + deleteSuccess);
       if (syncFile != null) {
         syncFile.close();
       }
 
-      if (sensorDbHelper != null) {
-        OpenHelperManager.releaseHelper();
-        sensorDbHelper = null;
-      }
+      Log.i(TAG, "Finishing backup. Success? " + backupSuccess);
 
-      Message msgToService = mServiceHandler.obtainMessage();
-      msgToService.what = PlatysService.PLATYS_MSG_SYNC_FINISHED;
+      Message msgToService = mServiceHandler.obtainMessage(PlatysService.PLATYS_MSG_SYNC_FINISHED);
+      msgToService.arg1 = backupSuccess;
       msgToService.sendToTarget();
     }
-  }
-
-  private SensorDbHelper getSensorDbHelper() {
-    if (sensorDbHelper == null) {
-      sensorDbHelper = OpenHelperManager.getHelper(mContext, SensorDbHelper.class);
-    }
-    return sensorDbHelper;
   }
 
 }

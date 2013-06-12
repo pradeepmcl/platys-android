@@ -48,18 +48,6 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
     super.close();
   }
 
-  public void truncateTables() {
-    try {
-      for (PlatysSensorEnum sensor : PlatysSensorEnum.values()) {
-        TableUtils.clearTable(connectionSource, sensor.getDataClass());
-      }
-      addDbInstanceInfo();
-    } catch (SQLException e) {
-      Log.e(SensorDbHelper.class.getName(), "Can't drop database", e);
-      throw new RuntimeException(e);
-    }
-  }
-
   private void addDbInstanceInfo() throws SQLException {
     Dao<SensorDbInstanceInfo, ?> instanceInfoDao = getDao(PlatysSensorEnum.SENSOR_DB_INSTANCE_INFO
         .getDataClass());
@@ -71,34 +59,4 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
     }
   }
 
-  /*public void backup(FileOutputStream writeStream) {
-    FileChannel src = null;
-    FileChannel dst = null;
-
-    if (true) {
-      try {
-        File currentDB = mContext.getDatabasePath(DATABASE_NAME);
-        if (currentDB.exists()) {
-          src = new FileInputStream(currentDB).getChannel();
-          dst = writeStream.getChannel();
-          dst.transferFrom(src, 0, src.size());
-        }
-      } catch (IOException e) {
-        Log.e(SensorDbHelper.class.getName(), "Can't backup database", e);
-        throw new RuntimeException(e);
-      } finally {
-        try {
-          if (src != null) {
-            src.close();
-          }
-          if (dst != null) {
-            dst.close();
-          }
-        } catch (IOException e) {
-          Log.e(SensorDbHelper.class.getName(), "Can't close backup files");
-          throw new RuntimeException(e);
-        }
-      }
-    }
-  }*/
 }

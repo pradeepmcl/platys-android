@@ -27,6 +27,9 @@ public class BluetoothDeviceSensor implements Sensor {
   private final BluetoothAdapter mBluetoothAdapter;
   private final SensorDbHelper mDbHelper;
   private final int mSensorIndex;
+  private final Message mMsgToPoller;
+
+  private BluetoothDeviceFoundReceiver mBluetoothDeviceFoundReceiver = null;
   
   private long mSensingStartTime;
 
@@ -37,32 +40,38 @@ public class BluetoothDeviceSensor implements Sensor {
     mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     mDbHelper = dbHelper;
     mSensorIndex = sensorIndex;
+    mMsgToPoller = mHandler.obtainMessage(Sensor.MSG_FROM_SENSOR, mSensorIndex);
+    mMsgToPoller.arg1 = mSensorIndex;
   }
 
   @Override
-  public boolean startSensor() {
+  public void startSensor() {
     if (!mBluetoothAdapter.isEnabled()) {
-      return false;
+      mMsgToPoller.arg2 = SENSOR_DISABLED;
+      mMsgToPoller.sendToTarget();
     }
 
-    mContext.registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(
+    mBluetoothDeviceFoundReceiver = new BluetoothDeviceFoundReceiver();
+    mContext.registerReceiver(mBluetoothDeviceFoundReceiver, new IntentFilter(
         BluetoothDevice.ACTION_FOUND));
 
     if (!mBluetoothAdapter.isDiscovering()) {
       Log.i(TAG, "Starting Bluetooth discovery");
       mSensingStartTime = System.currentTimeMillis();
-      return mBluetoothAdapter.startDiscovery();
+
+      if (mBluetoothAdapter.startDiscovery() == false) {
+        mMsgToPoller.arg2 = SENSING_NOT_INITIATED;
+        mMsgToPoller.sendToTarget();
+      }
     }
 
-    return true;
   }
 
   @Override
-  public boolean stopSensor() {
-    if (bluetoothDeviceFoundReceiver != null) {
-      mContext.unregisterReceiver(bluetoothDeviceFoundReceiver);
+  public void stopSensor() {
+    if (mBluetoothDeviceFoundReceiver != null) {
+      mContext.unregisterReceiver(mBluetoothDeviceFoundReceiver);
     }
-    return true;
   }
 
   @Override
@@ -70,11 +79,11 @@ public class BluetoothDeviceSensor implements Sensor {
     return DEFAULT_TIMEOUT;
   }
 
-  private final BroadcastReceiver bluetoothDeviceFoundReceiver = new BroadcastReceiver() {
+  private class BluetoothDeviceFoundReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(final Context context, Intent intent) {
       Log.i(TAG, "Received Bluetooth device found broadcast");
-      int result = Sensor.SENSING_SUCCEEDED;
+      int result = SENSING_SUCCEEDED;
       BluetoothDevice dev = intent
           .getParcelableExtra(android.bluetooth.BluetoothDevice.EXTRA_DEVICE);
       Short devRssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, (short) 0);
@@ -89,12 +98,12 @@ public class BluetoothDeviceSensor implements Sensor {
         mDbHelper.getDao(PlatysSensorEnum.BLUETOOTH_DEVICE_SENSOR.getDataClass()).create(
             btDeviceData);
       } catch (SQLException e) {
-        result = Sensor.SENSING_FAILED;
+        result = SENSING_FAILED;
         Log.e(TAG, "Database operation failed.", e);
       }
 
-      Message msg = mHandler.obtainMessage(Sensor.MSG_FROM_SENSOR, mSensorIndex, result);
-      msg.sendToTarget();
+      mMsgToPoller.arg2 = result;
+      mMsgToPoller.sendToTarget();
     }
   };
 

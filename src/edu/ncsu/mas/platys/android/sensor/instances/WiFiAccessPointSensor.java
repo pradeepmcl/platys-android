@@ -34,8 +34,12 @@ public class WiFiAccessPointSensor implements Sensor {
   private final WifiManager mWifiMgr;
   private final SensorDbHelper mDbHelper;
   private final int mSensorIndex;
-  
+
+  private WifiAccessPointReceiver mWifiAccessPointReceiver = null;
+
   private long mSensingStartTime;
+
+  private final Message mMsgToPoller;
 
   public WiFiAccessPointSensor(Context context, Handler handler, SensorDbHelper dbHelper,
       int sensorIndex) {
@@ -44,27 +48,36 @@ public class WiFiAccessPointSensor implements Sensor {
     mWifiMgr = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
     mDbHelper = dbHelper;
     mSensorIndex = sensorIndex;
+    mMsgToPoller = mHandler.obtainMessage(Sensor.MSG_FROM_SENSOR);
+    mMsgToPoller.arg1 = mSensorIndex;
   }
 
   @Override
-  public boolean startSensor() {
+  public void startSensor() {
     if (!mWifiMgr.isWifiEnabled()) {
-      return false;
+      mMsgToPoller.arg2 = SENSOR_DISABLED;
+      mMsgToPoller.sendToTarget();
     }
-    mContext.registerReceiver(wifiAccessPointReceiver, new IntentFilter(
+
+    mWifiAccessPointReceiver = new WifiAccessPointReceiver();
+    mContext.registerReceiver(mWifiAccessPointReceiver, new IntentFilter(
         WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
     Log.i(TAG, "Starting WiFi AP scan.");
+
     mSensingStartTime = System.currentTimeMillis();
-    return mWifiMgr.startScan();
+
+    if (mWifiMgr.startScan() == false) {
+      mMsgToPoller.arg2 = SENSING_NOT_INITIATED;
+      mMsgToPoller.sendToTarget();
+    }
   }
 
   @Override
-  public boolean stopSensor() {
-    if (wifiAccessPointReceiver != null) {
-      mContext.unregisterReceiver(wifiAccessPointReceiver);
+  public void stopSensor() {
+    if (mWifiAccessPointReceiver != null) {
+      mContext.unregisterReceiver(mWifiAccessPointReceiver);
     }
-    return true;
   }
 
   @Override
@@ -72,12 +85,11 @@ public class WiFiAccessPointSensor implements Sensor {
     return DEFAULT_TIMEOUT;
   }
 
-  private final BroadcastReceiver wifiAccessPointReceiver = new BroadcastReceiver() {
+  private class WifiAccessPointReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(final Context context, Intent intent) {
       Log.i(TAG, "Received WiFI AP list available broadcast");
       int result = Sensor.SENSING_SUCCEEDED;
-      
       final List<ScanResult> apList = mWifiMgr.getScanResults();
       final WifiInfo connectedAp = mWifiMgr.getConnectionInfo();
       try {
@@ -109,16 +121,16 @@ public class WiFiAccessPointSensor implements Sensor {
           }
         });
       } catch (SQLException e) {
-        result = Sensor.SENSING_FAILED;
+        result = SENSING_FAILED;
         Log.e(TAG, "Database operation failed.", e);
       } catch (Exception e) {
-        result = Sensor.SENSING_FAILED;
+        result = SENSING_FAILED;
         Log.e(TAG, "Unknown error", e);
       }
 
-      Message msg = mHandler.obtainMessage(Sensor.MSG_FROM_SENSOR, mSensorIndex, result);
-      msg.sendToTarget();
+      mMsgToPoller.arg2 = result;
+      mMsgToPoller.sendToTarget();
     }
-  };
+  }
 
 }
