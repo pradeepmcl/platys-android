@@ -6,5 +6,11 @@
     <string name="link_to_dropbox">Link to Dropbox</string>
     <string name="place_label_hint">Enter place label.</string>
     <string name="submit">Submit</string>
+    <string name="mode_choose">Setup the Platys middleware to run in one of the following modes.</string>
+    <string name="dropbox">Dropbox</string>
+    <string name="platys_server">Platys Server</string>
+    <string name="dropbox_mode_desc">Dropbox mode requires you to set up a Platys reasoner on a computer with Dropbox access.</string>
+    <string name="server_mode_desc">Choose this mode if you are participating in Platys evaluation. You must submit a consent form before choosing this mode.</string>
+    <string name="next">Next</string>
 
 </resources>

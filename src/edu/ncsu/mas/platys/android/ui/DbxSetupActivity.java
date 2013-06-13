@@ -1,5 +1,6 @@
-package edu.ncsu.mas.platys.android;
+package edu.ncsu.mas.platys.android.ui;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,7 +12,9 @@ import android.widget.Button;
 
 import com.dropbox.sync.android.DbxAccountManager;
 
-public class PlatysActivity extends Activity {
+import edu.ncsu.mas.platys.android.R;
+
+public class DbxSetupActivity extends Activity {
 
   private static final int REQUEST_LINK_TO_DBX = 0;
 
@@ -25,12 +28,16 @@ public class PlatysActivity extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_platys);
+    
+    ActionBar actioBar = getActionBar();
+    actioBar.setTitle("Platys");
+    actioBar.setSubtitle("pradeepmcl@gmail.com (Dbx)");
 
-    Intent platysSenseIntent = new Intent(this, PlatysReceiver.class);
+    /*Intent platysSenseIntent = new Intent(this, PlatysReceiver.class);
     platysSenseIntent.setAction(PlatysReceiver.ACTION_PERIODIC);
     platysSenseIntent.putExtra(PlatysReceiver.EXTRA_TASK,
         PlatysReceiver.PlatysTask.PLATYS_TASK_SENSE.toString());
-    sendBroadcast(platysSenseIntent);
+    sendBroadcast(platysSenseIntent);*/
 
     mLinkToDropboxButton = (Button) findViewById(R.id.linkToDbxButton);
     mLinkToDropboxButton.setOnClickListener(new OnClickListener() {
@@ -50,11 +57,11 @@ public class PlatysActivity extends Activity {
     if (mDbxAcctMgr.hasLinkedAccount()) {
       mLinkToDropboxButton.setVisibility(View.GONE);
 
-      Intent platysSyncIntent = new Intent(this, PlatysReceiver.class);
+      /*Intent platysSyncIntent = new Intent(this, PlatysReceiver.class);
       platysSyncIntent.setAction(PlatysReceiver.ACTION_PERIODIC);
       platysSyncIntent.putExtra(PlatysReceiver.EXTRA_TASK,
           PlatysReceiver.PlatysTask.PLATYS_TASK_SYNC.toString());
-      sendBroadcast(platysSyncIntent);
+      sendBroadcast(platysSyncIntent);*/
 
     } else {
       mLinkToDropboxButton.setVisibility(View.VISIBLE);
@@ -64,7 +71,7 @@ public class PlatysActivity extends Activity {
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     // Inflate the menu; this adds items to the action bar if it is present.
-    getMenuInflater().inflate(R.menu.home, menu);
+    getMenuInflater().inflate(R.menu.platys_home, menu);
     return true;
   }
 
