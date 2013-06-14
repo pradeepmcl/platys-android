@@ -62,6 +62,7 @@
                 <action android:name="platys.intent.action.START_SYNCING"/>
             </intent-filter>
         </receiver>
+        <activity android:name=".ui.ServerModeChooserActivity"></activity>
     </application>
 
 </manifest>

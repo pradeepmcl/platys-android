@@ -1,27 +1,23 @@
 package edu.ncsu.mas.platys.android.ui;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import edu.ncsu.mas.platys.android.R;
 
-public class PlatysActivity extends Activity {
-  private final String mServerMode = null;
-  private final String mUserName = null;
+public class ServerModeChooserActivity extends Activity {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    startActivity(new Intent(this, ServerModeChooserActivity.class));
+    setContentView(R.layout.activity_server_mode_chooser);
   }
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     MenuInflater inflater = getMenuInflater();
-    inflater.inflate(R.menu.platys_home, menu);
+    inflater.inflate(R.menu.server_mode_chooser, menu);
     return true;
   }
-
 }

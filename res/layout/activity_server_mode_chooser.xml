@@ -23,7 +23,6 @@
             android:id="@+id/dropboxModeRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:text="@string/dropbox" />
 
         <RadioButton
@@ -38,13 +37,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/dropbox_mode_desc"
-        android:textAppearance="?android:attr/textAppearance" />
+        android:textAppearance="?android:attr/textAppearance"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/serverModeDesc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/server_mode_desc"
-        android:textAppearance="?android:attr/textAppearance" />
+        android:textAppearance="?android:attr/textAppearance"
+        android:visibility="gone" />
 
 </LinearLayout>

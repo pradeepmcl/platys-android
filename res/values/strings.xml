@@ -12,5 +12,6 @@
     <string name="dropbox_mode_desc">Dropbox mode requires you to set up a Platys reasoner on a computer with Dropbox access.</string>
     <string name="server_mode_desc">Choose this mode if you are participating in Platys evaluation. You must submit a consent form before choosing this mode.</string>
     <string name="next">Next</string>
+    <string name="proceed">Proceed</string>
 
 </resources>
