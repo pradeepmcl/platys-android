@@ -1,15 +1,169 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:padding="5dp" >
 
-    <ExpandableListView
-        android:id="@+id/fragmentPlacesSuggestionsExpList"
+    <RelativeLayout
+        android:id="@+id/rlWrapperHeaderPlacesFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" >
+        android:orientation="horizontal" >
 
-    </ExpandableListView>
+        <ImageButton
+            android:id="@+id/ibTimePickPlacesFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="@string/pick_time"
+            android:src="@drawable/ic_dark_device_access_time" />
+
+        <View
+            android:id="@+id/vDividerPickTimePlacesFragment"
+            android:layout_width="1dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/ibTimePickPlacesFragment"
+            android:layout_alignParentTop="true"
+            android:layout_margin="4dp"
+            android:layout_toLeftOf="@id/ibTimePickPlacesFragment"
+            android:background="?android:attr/dividerVertical" />
+
+        <TextView
+            android:id="@+id/tvHeaderPlacesFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/etTimePlacesFragment"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:text="@string/your_place"
+            android:textAppearance="?android:attr/textAppearance" />
+
+        <EditText
+            android:id="@+id/etTimePlacesFragment"
+            android:layout_width="169dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignRight="@id/vDividerPickTimePlacesFragment"
+            android:layout_toRightOf="@id/tvHeaderPlacesFragment"
+            android:ems="10"
+            android:inputType="time"
+            android:textAppearance="?android:attr/textAppearance" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/llIsWrapperPlacesFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/rlWrapperHeaderPlacesFragment" >
+
+        <TextView
+            android:id="@+id/tvIsOrWasPlacesFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/is"
+            android:textAppearance="?android:attr/textAppearance" />
+
+        <TextView
+            android:id="@+id/tvIsOrWasListPlacesFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/none"
+            android:textAppearance="?android:attr/textAppearance"
+            android:textStyle="bold|italic" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llIsNotWrapperPlacesFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/llIsWrapperPlacesFragment"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/tvIsNotOrWasNotPlacesFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/is_not"
+            android:textAppearance="?android:attr/textAppearance" />
+
+        <TextView
+            android:id="@+id/tvIsNotOrWasNotListPlacesFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/none"
+            android:textAppearance="?android:attr/textAppearance"
+            android:textStyle="bold|italic" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/vHDivider1PlacesFragment"
+        android:layout_width="match_parent"
+        android:layout_height="1dip"
+        android:layout_below="@id/llIsNotWrapperPlacesFragment"
+        android:layout_marginTop="4dp"
+        android:background="?android:attr/dividerVertical" />
+
+    <ListView
+        android:id="@+id/lvSuggestionsPlacesFragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/rlWrapperNewLabelPlacesFagment"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/vHDivider1PlacesFragment" >
+
+    </ListView>
+
+    <RelativeLayout
+        android:id="@+id/rlWrapperNewLabelPlacesFagment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="4dp" >
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dip"
+            android:layout_alignParentTop="true"
+            android:background="?android:attr/dividerVertical" />
+
+        <ImageButton
+            android:id="@+id/ibNewLabelPlacesFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="center_vertical"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="@string/add_place_label"
+            android:src="@drawable/ic_dark_collections_new_label" />
+
+        <View
+            android:id="@+id/vDividerNewLabelPlacesFragment"
+            android:layout_width="1dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/ibNewLabelPlacesFragment"
+            android:layout_alignParentTop="true"
+            android:layout_margin="4dp"
+            android:layout_toLeftOf="@id/ibNewLabelPlacesFragment"
+            android:background="?android:attr/dividerVertical" />
+
+        <EditText
+            android:id="@+id/etNewLabelPlacesFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignRight="@+id/vDividerNewLabelPlacesFragment"
+            android:layout_gravity="center_vertical"
+            android:ems="10"
+            android:hint="@string/new_pace_label_hint"
+            android:textAppearance="?android:attr/textAppearance" />
+    </RelativeLayout>
 
 </RelativeLayout>

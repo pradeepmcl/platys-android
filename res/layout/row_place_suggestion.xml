@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rlPlaceSuggestionRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <LinearLayout
+        android:id="@+id/llWrapperLabelPlaceSuggestionRow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="5dp"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/tvTitlePlaceSuggestionRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            android:textAppearance="?android:attr/textAppearance" />
+
+        <TextView
+            android:id="@+id/tvSubtitlePlaceSuggestionRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="Subtitle"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/ibCancelSuggestionPlaceSuggestionRow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/cancel"
+        android:src="@drawable/ic_dark_navigation_cancel" />
+
+    <View
+        android:id="@+id/vDividerCancelSuggestionPlaceSuggestionRow"
+        android:layout_width="1dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/ibCancelSuggestionPlaceSuggestionRow"
+        android:layout_centerVertical="true"
+        android:layout_margin="4dp"
+        android:layout_toLeftOf="@id/ibCancelSuggestionPlaceSuggestionRow"
+        android:background="?android:attr/dividerVertical" />
+
+    <ImageButton
+        android:id="@+id/ibAcceptSuggestionPlaceSuggestionRow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/vDividerCancelSuggestionPlaceSuggestionRow"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/accept"
+        android:src="@drawable/ic_dark_navigation_accept" />
+
+    <View
+        android:id="@+id/vDividerAcceptSuggestionPlaceSuggestionRow"
+        android:layout_width="1dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/ibAcceptSuggestionPlaceSuggestionRow"
+        android:layout_centerVertical="true"
+        android:layout_margin="4dp"
+        android:layout_toLeftOf="@id/ibAcceptSuggestionPlaceSuggestionRow"
+        android:background="?android:attr/dividerVertical" />
+
+</RelativeLayout>

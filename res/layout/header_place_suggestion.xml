@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <LinearLayout
+        android:id="@+id/llWrapperSuggestionHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/tvHeaderPlaceSuggestion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/suggestions"
+            android:textAppearance="?android:attr/textAppearance"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvSubtitleSuggestionHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/llWrapperSuggestionHeader"
+        android:text="@string/suggestion_header_subtitle"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <ImageButton
+        android:id="@+id/ibRefershPlaceSuggestions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/refresh"
+        android:src="@drawable/ic_dark_navigation_refresh" />
+
+    <View
+        android:id="@+id/vDividerRefreshPlaceSuggestionsHeader"
+        android:layout_width="1dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/ibRefershPlaceSuggestions"
+        android:layout_centerVertical="true"
+        android:layout_margin="4dp"
+        android:layout_toLeftOf="@id/ibRefershPlaceSuggestions"
+        android:background="?android:attr/dividerVertical" />
+
+</RelativeLayout>
