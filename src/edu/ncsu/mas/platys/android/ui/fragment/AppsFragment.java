@@ -1,4 +1,4 @@
-package edu.ncsu.mas.platys.android.ui;
+package edu.ncsu.mas.platys.android.ui.fragment;
 
 import android.app.Fragment;
 

@@ -1,7 +1,5 @@
 package edu.ncsu.mas.platys.android.ui;
 
-import com.dropbox.sync.android.DbxAccountManager;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +14,9 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
+
+import com.dropbox.sync.android.DbxAccountManager;
+
 import edu.ncsu.mas.platys.android.R;
 import edu.ncsu.mas.platys.common.constasnts.SyncConstants;
 
@@ -94,7 +95,7 @@ public class ServerModeChooserActivity extends Activity {
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
-    case R.id.next:
+    case R.id.menu_server_mode_next:
       handleServerChoice(mServerMode);
       return true;
     default:

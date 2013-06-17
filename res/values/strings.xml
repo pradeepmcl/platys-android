@@ -13,5 +13,6 @@
     <string name="server_mode_desc">Choose this mode if you are participating in Platys evaluation. You must submit a consent form before choosing this mode.</string>
     <string name="next">Next</string>
     <string name="proceed">Proceed</string>
+    <string name="add_place_label">Add Place Label</string>
 
 </resources>

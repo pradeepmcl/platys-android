@@ -13,6 +13,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.Toast;
 import edu.ncsu.mas.platys.android.R;
+import edu.ncsu.mas.platys.android.ui.fragment.AppsFragment;
+import edu.ncsu.mas.platys.android.ui.fragment.PlacesFragment;
+import edu.ncsu.mas.platys.android.ui.fragment.SensorsFragment;
 
 public class PlatysActivity extends Activity {
 
@@ -44,19 +47,19 @@ public class PlatysActivity extends Activity {
     if (mServerMode == null || mUsername.length() == 0) {
       startActivity(new Intent(this, ServerModeChooserActivity.class));
     }
-    
-    mActionBar = getActionBar();    
+
+    mActionBar = getActionBar();
     mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
     mActionBar.setTitle(getString(R.string.app_name));
     mActionBar.setSubtitle(mUsername);
-    
+
     mActionBar.addTab(mActionBar.newTab().setText("Places")
         .setTabListener(new TabListener<PlacesFragment>(this, "places", PlacesFragment.class)));
-    
+
     mActionBar.addTab(mActionBar.newTab().setText("Sensors")
         .setTabListener(new TabListener<SensorsFragment>(this, "sensors", SensorsFragment.class)));
-    
+
     mActionBar.addTab(mActionBar.newTab().setText("Apps")
         .setTabListener(new TabListener<AppsFragment>(this, "apps", AppsFragment.class)));
   }
@@ -110,6 +113,7 @@ public class PlatysActivity extends Activity {
       }
     }
 
+    @Override
     public void onTabSelected(Tab tab, FragmentTransaction ft) {
       if (mFragment == null) {
         mFragment = Fragment.instantiate(mActivity, mClass.getName(), mArgs);
@@ -119,12 +123,14 @@ public class PlatysActivity extends Activity {
       }
     }
 
+    @Override
     public void onTabUnselected(Tab tab, FragmentTransaction ft) {
       if (mFragment != null) {
         ft.detach(mFragment);
       }
     }
 
+    @Override
     public void onTabReselected(Tab tab, FragmentTransaction ft) {
       Toast.makeText(mActivity, "Reselected!", Toast.LENGTH_SHORT).show();
     }

@@ -1,3 +1,6 @@
 # Eclipse specific directories
 bin/
 gen/
+
+# Mac specific file
+.DS_Store
