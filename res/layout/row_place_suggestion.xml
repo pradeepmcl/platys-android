@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/rlPlaceSuggestionRow"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content"
+    android:layout_marginTop="4dp" >
 
     <LinearLayout
         android:id="@+id/llWrapperLabelPlaceSuggestionRow"
@@ -21,13 +22,13 @@
             android:text="Title"
             android:textAppearance="?android:attr/textAppearance" />
 
-        <TextView
+        <!--<TextView
             android:id="@+id/tvSubtitlePlaceSuggestionRow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:text="Subtitle"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall" />-->
     </LinearLayout>
 
     <ImageButton
@@ -38,6 +39,7 @@
         android:layout_centerVertical="true"
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@string/cancel"
+        android:padding="5dp"
         android:src="@drawable/ic_dark_navigation_cancel" />
 
     <View
@@ -58,6 +60,7 @@
         android:layout_toLeftOf="@+id/vDividerCancelSuggestionPlaceSuggestionRow"
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@string/accept"
+        android:padding="5dp"
         android:src="@drawable/ic_dark_navigation_accept" />
 
     <View

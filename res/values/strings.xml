@@ -14,16 +14,21 @@
     <string name="next">Next</string>
     <string name="proceed">Proceed</string>
     <string name="add_place_label">Add Place Label</string>
-    <string name="your_place">Your place at</string>
+    <string name="your_place">Labels for place at</string>
     <string name="new_pace_label_hint">Enter a new place label</string>
     <string name="pick_time">Pick a time</string>
-    <string name="is">"IS: "</string>
-    <string name="is_not">&quot;IS NOT: &quot;</string>
+    <string name="include">&quot;include &quot;</string>
+    <string name="exclude">&quot;exclude &quot;</string>
     <string name="none">None</string>
     <string name="cancel">Cancel</string>
     <string name="accept">Accept</string>
     <string name="suggestions">Suggestions</string>
     <string name="suggestion_header_subtitle">(Suggestion source)</string>
     <string name="refresh">Refresh</string>
+    <string name="include_hint">accepted suggestions and new comma separated labels, and</string>
+    <string name="exclude_hint">rejected suggestions.</string>
+    <string name="save">Save</string>
+    <string name="undo">Undo</string>
+    <string name="discard">Discard</string>
 
 </resources>

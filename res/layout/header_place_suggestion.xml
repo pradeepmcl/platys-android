@@ -1,33 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content"
+    android:background="@android:color/darker_gray" >
 
     <LinearLayout
         android:id="@+id/llWrapperSuggestionHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
         android:orientation="vertical" >
 
         <TextView
             android:id="@+id/tvHeaderPlaceSuggestion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:text="@string/suggestions"
             android:textAppearance="?android:attr/textAppearance"
             android:textStyle="bold" />
-    </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvSubtitleSuggestionHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/llWrapperSuggestionHeader"
-        android:text="@string/suggestion_header_subtitle"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        <!--<TextView
+            android:id="@+id/tvSubtitleSuggestionHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="@string/suggestion_header_subtitle"
+            android:textAppearance="?android:attr/textAppearanceSmall" />-->
+
+    </LinearLayout>
 
     <ImageButton
         android:id="@+id/ibRefershPlaceSuggestions"
@@ -37,6 +39,7 @@
         android:layout_centerVertical="true"
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@string/refresh"
+        android:padding="5dp"
         android:src="@drawable/ic_dark_navigation_refresh" />
 
     <View
