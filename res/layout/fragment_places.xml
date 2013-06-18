@@ -68,14 +68,14 @@
         android:layout_marginTop="4dp" >
 
         <TextView
-            android:id="@+id/tvIsOrWasPlacesFragment"
+            android:id="@+id/tvIncludePlacesFragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/include"
             android:textAppearance="?android:attr/textAppearance" />
 
         <EditText
-            android:id="@+id/tvIsOrWasListPlacesFragment"
+            android:id="@+id/etIncludeListPlacesFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/include_hint"
@@ -93,14 +93,14 @@
         android:orientation="horizontal" >
 
         <TextView
-            android:id="@+id/tvIsNotOrWasNotPlacesFragment"
+            android:id="@+id/tvExcludePlacesFragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/exclude"
             android:textAppearance="?android:attr/textAppearance" />
 
         <EditText
-            android:id="@+id/tvIsNotOrWasNotListPlacesFragment"
+            android:id="@+id/etExcludeListPlacesFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="false"

@@ -5,32 +5,6 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="4dp" >
 
-    <LinearLayout
-        android:id="@+id/llWrapperLabelPlaceSuggestionRow"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_centerVertical="true"
-        android:layout_marginLeft="5dp"
-        android:orientation="vertical" >
-
-        <TextView
-            android:id="@+id/tvTitlePlaceSuggestionRow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Title"
-            android:textAppearance="?android:attr/textAppearance" />
-
-        <!--<TextView
-            android:id="@+id/tvSubtitlePlaceSuggestionRow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:text="Subtitle"
-            android:textAppearance="?android:attr/textAppearanceSmall" />-->
-    </LinearLayout>
-
     <ImageButton
         android:id="@+id/ibCancelSuggestionPlaceSuggestionRow"
         android:layout_width="wrap_content"
@@ -72,5 +46,24 @@
         android:layout_margin="4dp"
         android:layout_toLeftOf="@id/ibAcceptSuggestionPlaceSuggestionRow"
         android:background="?android:attr/dividerVertical" />
+
+    <LinearLayout
+        android:id="@+id/llWrapperLabelPlaceSuggestionRow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="5dp"
+        android:layout_toLeftOf="@id/vDividerAcceptSuggestionPlaceSuggestionRow"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/tvTitlePlaceSuggestionRow"
+            style="@style/autoscroll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            android:textAppearance="?android:attr/textAppearance" />
+    </LinearLayout>
 
 </RelativeLayout>
