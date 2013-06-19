@@ -25,10 +25,12 @@
     <string name="suggestions">Suggestions</string>
     <string name="suggestion_header_subtitle">(Suggestion source)</string>
     <string name="refresh">Refresh</string>
-    <string name="include_hint">accepted suggestions and new comma separated labels, and</string>
+    <string name="include_hint">accepted suggestions and new labels, and</string>
     <string name="exclude_hint">rejected suggestions.</string>
     <string name="save">Save</string>
     <string name="undo">Undo</string>
     <string name="discard">Discard</string>
+    <string name="place_suggestion">Place Suggestion</string>
+    <string name="add_place">Add place</string>
 
 </resources>

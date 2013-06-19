@@ -66,9 +66,9 @@ public class PlacesFragment extends Fragment {
     placeExcludeEt = (EditText) view.findViewById(R.id.etExcludeListPlacesFragment);
 
     // Suggestions list
-    View listViewHeader = inflater.inflate(R.layout.header_place_suggestion, null);
+    // View listViewHeader = inflater.inflate(R.layout.header_place_suggestion, null);
     ListView lv = (ListView) view.findViewById(R.id.lvSuggestionsPlacesFragment);
-    lv.addHeaderView(listViewHeader);
+    // lv.addHeaderView(listViewHeader);
 
     ArrayAdapter<Model> adapter = new PlaceSuggestionArrayAdapter(this.getActivity(), getModel());
     lv.setAdapter(adapter);
@@ -98,7 +98,7 @@ public class PlacesFragment extends Fragment {
   }
 
   public static class TimePickerFragment extends DialogFragment implements
-      TimePickerDialog.OnTimeSetListener {
+  TimePickerDialog.OnTimeSetListener {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -159,8 +159,8 @@ public class PlacesFragment extends Fragment {
   private static String formatTime(Calendar cal) {
     return (cal.get(Calendar.HOUR) < 10 ? "0" + cal.get(Calendar.HOUR) : cal.get(Calendar.HOUR))
         + ":"
-        + (cal.get(Calendar.MINUTE) < 10 ? "0" + cal.get(Calendar.MINUTE) : cal.get(Calendar.MINUTE)) 
-        + " " 
+        + (cal.get(Calendar.MINUTE) < 10 ? "0" + cal.get(Calendar.MINUTE) : cal.get(Calendar.MINUTE))
+        + " "
         + (cal.get(Calendar.AM_PM) == 0 ? "AM" : "PM");
   }
 
@@ -207,7 +207,7 @@ public class PlacesFragment extends Fragment {
               String placeInclueList = placeIncludeEt.getText().toString();
               String placeExcludeList = placeExcludeEt.getText().toString();
               String place = element.getName();
-              
+
               // Remove from exclude list if exists
               if (placeExcludeList.contains(place)) {
                 if (placeExcludeList.contains(place + ", ")) {
@@ -219,7 +219,7 @@ public class PlacesFragment extends Fragment {
                 }
                 placeExcludeEt.setText(placeExcludeList);
               }
-              
+
               // Add to include list if doesn't exist
               if (!placeInclueList.contains(place)) {
                 if (placeInclueList.length() == 0) {
@@ -247,7 +247,7 @@ public class PlacesFragment extends Fragment {
               String placeIncludeList = placeIncludeEt.getText().toString();
               String placeExcludeList = placeExcludeEt.getText().toString();
               String place = element.getName();
-              
+
               // Remove from include list if exists
               if (placeIncludeList.contains(place)) {
                 if (placeIncludeList.contains(place + ", ")) {
@@ -259,7 +259,7 @@ public class PlacesFragment extends Fragment {
                 }
                 placeIncludeEt.setText(placeIncludeList);
               }
-              
+
               // Add to exclude list if doesn't exist
               if (!placeExcludeList.contains(place)) {
                 if (placeExcludeList.length() == 0) {
@@ -271,7 +271,7 @@ public class PlacesFragment extends Fragment {
             }
           }
         });
-        
+
         view.setTag(viewHolder);
         viewHolder.acceptButton.setTag(list.get(position));
 
