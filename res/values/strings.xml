@@ -14,7 +14,7 @@
     <string name="next">Next</string>
     <string name="proceed">Proceed</string>
     <string name="add_place_label">Add Place Label</string>
-    <string name="your_place">Labels for my place at</string>
+    <string name="your_place">Labels for my context at</string>
     <string name="new_pace_label_hint">Enter a new place label</string>
     <string name="pick_time">Pick a time</string>
     <string name="include">&quot;include &quot;</string>
@@ -32,5 +32,8 @@
     <string name="discard">Discard</string>
     <string name="place_suggestion">Place Suggestion</string>
     <string name="add_place">Add place</string>
+    <string name="places">Places</string>
+    <string name="sensors">Sensors</string>
+    <string name="apps">Apps</string>
 
 </resources>

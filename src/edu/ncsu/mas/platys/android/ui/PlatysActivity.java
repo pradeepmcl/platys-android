@@ -16,13 +16,18 @@ import edu.ncsu.mas.platys.android.R;
 import edu.ncsu.mas.platys.android.ui.fragment.AppsFragment;
 import edu.ncsu.mas.platys.android.ui.fragment.PlacesFragment;
 import edu.ncsu.mas.platys.android.ui.fragment.SensorsFragment;
+import edu.ncsu.mas.platys.android.ui.fragment.TimePickerFragment.OnTimeSetPlatysListener;
 
-public class PlatysActivity extends Activity {
+public class PlatysActivity extends Activity implements OnTimeSetPlatysListener {
 
   public static final String PLATYS_PREFS = "platys_prefs";
 
   public static final String PREFS_KEY_SERVER_MODE = "server_mode";
   public static final String PREFS_KEY_USERNAME = "username";
+
+  private static final String PLACES_TAB_TAG = "places";
+  private static final String SENSORS_TAB_TAG = "sensors";
+  private static final String APPS_TAB_TAG = "apps";
 
   private SharedPreferences mPreferences;
 
@@ -54,14 +59,21 @@ public class PlatysActivity extends Activity {
     mActionBar.setTitle(getString(R.string.app_name));
     mActionBar.setSubtitle(mUsername);
 
-    mActionBar.addTab(mActionBar.newTab().setText("Places")
-        .setTabListener(new TabListener<PlacesFragment>(this, "places", PlacesFragment.class)));
+    mActionBar
+        .addTab(mActionBar
+            .newTab()
+            .setText(R.string.places)
+            .setTabListener(
+                new TabListener<PlacesFragment>(this, PLACES_TAB_TAG, PlacesFragment.class)));
 
-    mActionBar.addTab(mActionBar.newTab().setText("Sensors")
-        .setTabListener(new TabListener<SensorsFragment>(this, "sensors", SensorsFragment.class)));
+    mActionBar.addTab(mActionBar
+        .newTab()
+        .setText(R.string.sensors)
+        .setTabListener(
+            new TabListener<SensorsFragment>(this, SENSORS_TAB_TAG, SensorsFragment.class)));
 
-    mActionBar.addTab(mActionBar.newTab().setText("Apps")
-        .setTabListener(new TabListener<AppsFragment>(this, "apps", AppsFragment.class)));
+    mActionBar.addTab(mActionBar.newTab().setText(R.string.apps)
+        .setTabListener(new TabListener<AppsFragment>(this, APPS_TAB_TAG, AppsFragment.class)));
   }
 
   @Override
@@ -135,4 +147,14 @@ public class PlatysActivity extends Activity {
       Toast.makeText(mActivity, "Reselected!", Toast.LENGTH_SHORT).show();
     }
   }
+
+  @Override
+  public void onTimeSet(int hourOfDay, int minute) {
+    OnTimeSetPlatysListener placesFragment = (OnTimeSetPlatysListener) getFragmentManager()
+        .findFragmentByTag(PLACES_TAB_TAG);
+    if (placesFragment != null) {
+      placesFragment.onTimeSet(hourOfDay, minute);
+    }
+  }
+
 }
