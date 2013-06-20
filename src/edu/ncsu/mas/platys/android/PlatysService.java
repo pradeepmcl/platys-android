@@ -15,6 +15,7 @@ import android.util.Log;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import edu.ncsu.mas.platys.android.PlatysReceiver.PlatysTask;
+import edu.ncsu.mas.platys.android.labels.PlaceLabelSaver;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.android.sensor.SensorEnum;
 import edu.ncsu.mas.platys.android.sensor.SensorPoller;
@@ -28,6 +29,7 @@ public class PlatysService extends Service {
 
   public static final int PLATYS_MSG_SENSE_FINISHED = 0;
   public static final int PLATYS_MSG_SYNC_FINISHED = 1;
+  public static final int PLATYS_MSG_SAVE_LABELS_FINISHED = 2;
 
   private static volatile PowerManager.WakeLock lockStatic = null;
 
@@ -35,7 +37,7 @@ public class PlatysService extends Service {
   private SensorDbHelper mSensorDbHelper = null;
 
   private Thread runningThread = null;
-  private final List<PlatysTask> pendingTasks = new LinkedList<PlatysTask>();
+  private final List<Intent> pendingTasks = new LinkedList<Intent>();
 
   synchronized private static PowerManager.WakeLock getLock(Context context) {
     if (lockStatic == null) {
@@ -70,12 +72,8 @@ public class PlatysService extends Service {
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     if (intent != null) {
-      String actionName = intent.getAction();
-      Log.i(TAG, "Starting PlatysSerice for action: " + actionName);
-
-      String taskName = intent.getStringExtra(PlatysReceiver.EXTRA_TASK);
-      PlatysReceiver.PlatysTask platysTask = PlatysReceiver.PlatysTask.valueOf(taskName);
-      pendingTasks.add(platysTask);
+      Log.i(TAG, "Starting PlatysSerice for action: " + intent.getAction());
+      pendingTasks.add(intent);
       runAPendingTask();
     }
 
@@ -105,7 +103,11 @@ public class PlatysService extends Service {
               SensorDbHelper.class);
         }
 
-        switch (pendingTasks.remove(0)) {
+        Intent pendingTaskIntent = pendingTasks.remove(0);
+        PlatysReceiver.PlatysTask platysTask = (PlatysTask) pendingTaskIntent
+            .getSerializableExtra(PlatysReceiver.EXTRA_TASK);
+
+        switch (platysTask) {
         case PLATYS_TASK_SENSE:
           Log.i(TAG, "Perform Platys sense action.");
           runningThread = new SensorPoller(getApplicationContext(), mServiceHandler,
@@ -116,6 +118,12 @@ public class PlatysService extends Service {
           Log.i(TAG, "Perform Platys sync action.");
           runningThread = new Thread(new DbxSyncer(getApplicationContext(), mServiceHandler,
               OpenHelperManager.getHelper(getApplicationContext(), SensorDbHelper.class)));
+          runningThread.start();
+          break;
+        case PLATYS_TASK_SAVE_LABELS:
+          Log.i(TAG, "Perform Platys save labels action.");
+          runningThread = new Thread(new PlaceLabelSaver(getApplicationContext(), mServiceHandler,
+              mSensorDbHelper, pendingTaskIntent));
           runningThread.start();
           break;
         default:
@@ -140,6 +148,10 @@ public class PlatysService extends Service {
       } else if (msg.what == PlatysService.PLATYS_MSG_SYNC_FINISHED) {
         Log.i(TAG, "SyncHandler finished.");
         OpenHelperManager.releaseHelper();
+        runningThread = null;
+        
+      } else if (msg.what == PlatysService.PLATYS_MSG_SAVE_LABELS_FINISHED) {
+        Log.i(TAG, "LabelSaver finished.");
         runningThread = null;
       }
 

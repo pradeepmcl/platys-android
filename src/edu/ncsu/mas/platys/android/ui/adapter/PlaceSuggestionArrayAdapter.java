@@ -11,12 +11,15 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import edu.ncsu.mas.platys.android.R;
-import edu.ncsu.mas.platys.android.ui.fragment.PlacesFragment.SuggestionClickListener;
 import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData;
 import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData.LabelType;
 
 public class PlaceSuggestionArrayAdapter extends ArrayAdapter<PlaceLabelData> {
 
+  public interface SuggestionClickListener {
+    public void onSuggestionClick(PlaceLabelData labelData);
+  }
+  
   private final List<PlaceLabelData> list;
   private final Activity context;
 

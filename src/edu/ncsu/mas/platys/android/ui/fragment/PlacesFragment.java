@@ -7,8 +7,8 @@ import java.util.List;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,16 +22,13 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.R;
 import edu.ncsu.mas.platys.android.ui.adapter.PlaceSuggestionArrayAdapter;
 import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData;
 import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData.LabelType;
 
 public class PlacesFragment extends Fragment {
-
-  public static interface SuggestionClickListener {
-    public void onSuggestionClick(PlaceLabelData labelData);
-  }
 
   private EditText timeEt = null;
   private EditText placeIncludeEt = null;
@@ -136,7 +133,7 @@ public class PlacesFragment extends Fragment {
     EditText addToEt;
     EditText removeFromEt;
 
-    switch(labelData.getLabelType()) {
+    switch (labelData.getLabelType()) {
     case ACCEPTED_SUGGESTION:
       addToEt = placeIncludeEt;
       removeFromEt = placeExcludeEt;
@@ -180,27 +177,27 @@ public class PlacesFragment extends Fragment {
   private void showPlaceInputAlertDialog() {
     final EditText etAddLabel = new EditText(getActivity());
     final AlertDialog.Builder addPlaceAlert = new AlertDialog.Builder(getActivity())
-    .setTitle("Enter a Place Label")
-    .setMessage("A place cane be space, activity, or social circle.").setView(etAddLabel)
-    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-      @Override
-      public void onClick(DialogInterface dialog, int whichButton) {
-        String input = etAddLabel.getText().toString().trim();
-        if (input != null && input.length() != 0) {
-          PlaceLabelData labelData = getPlaceLabelData(input);
-          if (labelData.getLabelType() == LabelType.NEW_LABEL) {
-            newLabelList.add(labelData);
-          }
+        .setTitle("Enter a Place Label")
+        .setMessage("A place cane be space, activity, or social circle.").setView(etAddLabel)
+        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int whichButton) {
+            String input = etAddLabel.getText().toString().trim();
+            if (input != null && input.length() != 0) {
+              PlaceLabelData labelData = getPlaceLabelData(input);
+              if (labelData.getLabelType() == LabelType.NEW_LABEL) {
+                newLabelList.add(labelData);
+              }
 
-          onSuggestion(labelData);
-        }
-      }
-    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-      @Override
-      public void onClick(DialogInterface dialog, int whichButton) {
-        // Do nothing.
-      }
-    });
+              onSuggestion(labelData);
+            }
+          }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int whichButton) {
+            // Do nothing.
+          }
+        });
 
     addPlaceAlert.show();
   }
@@ -257,11 +254,26 @@ public class PlacesFragment extends Fragment {
 
   private void saveData() {
     long curTime = System.currentTimeMillis();
+    ArrayList<String> labelList = new ArrayList<String>();
+    ArrayList<LabelType> labelTypeList = new ArrayList<LabelType>();
+
     for (PlaceLabelData label : suggestedLabelList) {
-      label.setSensingStartTime(labelingTime);
-      label.setSensingEndTime(curTime);
-      Log.i("Pradeep", label.getLabel() + ", " + label.getLabelType().toString());
+      labelList.add(label.getLabel());
+      labelTypeList.add(label.getLabelType());
     }
+
+    Intent platysSaveLabelsIntent = new Intent(getActivity(), PlatysReceiver.class);
+    platysSaveLabelsIntent.setAction(PlatysReceiver.ACTION_ONE_TIME);
+    
+    platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_TASK,
+        PlatysReceiver.PlatysTask.PLATYS_TASK_SAVE_LABELS);
+    platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABELING_START_TIME, curTime);
+    platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABELING_END_TIME, labelingTime);
+    platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABELS_LIST, labelList);
+    platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABEL_TYPES_LIST, labelTypeList);
+    
+    getActivity().sendBroadcast(platysSaveLabelsIntent);
+
   }
 
   private static String getFormattedTime(Calendar cal) {

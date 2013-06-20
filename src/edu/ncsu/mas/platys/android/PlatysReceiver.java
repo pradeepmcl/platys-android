@@ -17,9 +17,17 @@ public class PlatysReceiver extends BroadcastReceiver {
   public static final String EXTRA_TASK = "platys.intent.extra.TASK";
 
   public static enum PlatysTask {
-    PLATYS_TASK_SENSE, PLATYS_TASK_SYNC;
+    PLATYS_TASK_SENSE, 
+    PLATYS_TASK_SYNC, 
+    PLATYS_TASK_SAVE_LABELS;
   }
-
+  
+  // Sent with the PLATYS_TASK_SAVE_LABELS extra.
+  public static final String EXTRA_LABELING_START_TIME = "platys.intent.extra.LABELING_START_TIME";
+  public static final String EXTRA_LABELING_END_TIME = "platys.intent.extra.LABELING_END_TIME";
+  public static final String EXTRA_LABELS_LIST = "platys.intent.extra.LABELS_LIST";
+  public static final String EXTRA_LABEL_TYPES_LIST = "platys.intent.extra.LABEL_TYPES_LIST";
+  
   @Override
   public void onReceive(Context context, Intent intent) {
     String action = intent.getAction();
@@ -34,14 +42,14 @@ public class PlatysReceiver extends BroadcastReceiver {
   }
 
   private void schedulePlatysAction(Context context, Intent intent) {
-    String actionName = intent.getStringExtra(EXTRA_TASK);
+    PlatysTask task = (PlatysTask) intent.getSerializableExtra(EXTRA_TASK);
 
     Intent intentToSchedule = new Intent(context, PlatysReceiver.class);
     intentToSchedule.setAction(intent.getAction());
-    intentToSchedule.putExtra(EXTRA_TASK, actionName);
+    intentToSchedule.putExtra(EXTRA_TASK, task);
 
     long delayInMillis = 0;
-    switch (PlatysTask.valueOf(actionName)) {
+    switch (task) {
     case PLATYS_TASK_SENSE:
       delayInMillis = 10 * 60 * 1000; // 10 minutes.
       break;
