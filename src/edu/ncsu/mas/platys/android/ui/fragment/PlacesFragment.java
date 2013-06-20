@@ -24,18 +24,22 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import edu.ncsu.mas.platys.android.R;
 import edu.ncsu.mas.platys.android.ui.adapter.PlaceSuggestionArrayAdapter;
-import edu.ncsu.mas.platys.android.ui.fragment.TimePickerFragment.OnTimeSetPlatysListener;
 import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData;
 import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData.LabelType;
 
-public class PlacesFragment extends Fragment implements OnTimeSetPlatysListener {
+public class PlacesFragment extends Fragment {
 
+  public static interface SuggestionClickListener {
+    public void onSuggestionClick(PlaceLabelData labelData);
+  }
+
+  private EditText timeEt = null;
   private EditText placeIncludeEt = null;
   private EditText placeExcludeEt = null;
-  private EditText timeEt = null;
-  
+
   private long labelingTime;
-  private final List<PlaceLabelData> labelList = new ArrayList<PlaceLabelData>();
+  private final List<PlaceLabelData> suggestedLabelList = new ArrayList<PlaceLabelData>();
+  private final List<PlaceLabelData> newLabelList = new ArrayList<PlaceLabelData>();
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -46,14 +50,13 @@ public class PlacesFragment extends Fragment implements OnTimeSetPlatysListener 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.fragment_places, container, false);
-    
+
     Calendar cal = Calendar.getInstance();
     labelingTime = cal.getTimeInMillis();
-    
+
     // Time display
     timeEt = (EditText) view.findViewById(R.id.etTimePlacesFragment);
     timeEt.setText(getFormattedTime(cal));
-     
 
     // Time picker button
     ImageButton timePicker = (ImageButton) view.findViewById(R.id.ibTimePickPlacesFragment);
@@ -70,9 +73,10 @@ public class PlacesFragment extends Fragment implements OnTimeSetPlatysListener 
     // Place exclude list
     placeExcludeEt = (EditText) view.findViewById(R.id.etExcludeListPlacesFragment);
 
-    labelList.addAll(getPlaceLabels());
-    ArrayAdapter<PlaceLabelData> adapter = new PlaceSuggestionArrayAdapter(getActivity(), labelList);
-    
+    suggestedLabelList.addAll(getPlaceLabels());
+    ArrayAdapter<PlaceLabelData> adapter = new PlaceSuggestionArrayAdapter(getActivity(),
+        suggestedLabelList);
+
     // Place suggestion list
     ListView lv = (ListView) view.findViewById(R.id.lvSuggestionsPlacesFragment);
     lv.setAdapter(adapter);
@@ -82,22 +86,7 @@ public class PlacesFragment extends Fragment implements OnTimeSetPlatysListener 
     newLabelButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        final EditText etAddLabel = new EditText(getActivity());
-        final AlertDialog.Builder addPlaceAlert = new AlertDialog.Builder(getActivity())
-            .setTitle("Enter a Place Label")
-            .setMessage("A place cane be space, activity, or social circle.")
-            .setView(etAddLabel)
-            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-              public void onClick(DialogInterface dialog, int whichButton) {
-                Log.i("Pradeep", etAddLabel.getText().toString());
-              }
-            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-              public void onClick(DialogInterface dialog, int whichButton) {
-                // Do nothing.
-              }
-            });
-        
-        addPlaceAlert.show();
+        showPlaceInputAlertDialog();
       }
     });
 
@@ -126,22 +115,109 @@ public class PlacesFragment extends Fragment implements OnTimeSetPlatysListener 
       return super.onOptionsItemSelected(item);
     }
   }
-  
-  @Override
+
   public void onTimeSet(int hourOfDay, int minute) {
     if (timeEt != null) {
       Calendar cal = Calendar.getInstance();
       cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
       cal.set(Calendar.MINUTE, minute);
       cal.set(Calendar.SECOND, 0);
-      
+
       labelingTime = cal.getTimeInMillis();
-      
+
       timeEt.setText(getFormattedTime(cal));
       Animation anim = new AlphaAnimation(1.0f, 0.0f);
       anim.setDuration(1000);
       timeEt.startAnimation(anim);
     }
+  }
+
+  public void onSuggestion(PlaceLabelData labelData) {
+    EditText addToEt;
+    EditText removeFromEt;
+
+    switch(labelData.getLabelType()) {
+    case ACCEPTED_SUGGESTION:
+      addToEt = placeIncludeEt;
+      removeFromEt = placeExcludeEt;
+      break;
+    case NEW_LABEL:
+      addToEt = placeIncludeEt;
+      removeFromEt = placeExcludeEt;
+      break;
+    case REJECTED_SUGGESTION:
+      addToEt = placeExcludeEt;
+      removeFromEt = placeIncludeEt;
+      break;
+    default:
+      return;
+    }
+
+    String addToListList = addToEt.getText().toString();
+    String removeFromList = removeFromEt.getText().toString();
+    String curLabel = labelData.getLabel();
+
+    if (removeFromList.contains(curLabel)) {
+      if (removeFromList.contains(curLabel + ", ")) {
+        removeFromList = removeFromList.replace(curLabel + ", ", "");
+      } else if (removeFromList.contains(", " + curLabel)) {
+        removeFromList = removeFromList.replace(", " + curLabel, "");
+      } else {
+        removeFromList = removeFromList.replace(curLabel, "");
+      }
+      removeFromEt.setText(removeFromList);
+    }
+
+    if (!addToListList.contains(curLabel)) {
+      if (addToListList.length() == 0) {
+        addToEt.setText(curLabel);
+      } else {
+        addToEt.setText(addToListList + ", " + curLabel);
+      }
+    }
+  }
+
+  private void showPlaceInputAlertDialog() {
+    final EditText etAddLabel = new EditText(getActivity());
+    final AlertDialog.Builder addPlaceAlert = new AlertDialog.Builder(getActivity())
+    .setTitle("Enter a Place Label")
+    .setMessage("A place cane be space, activity, or social circle.").setView(etAddLabel)
+    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int whichButton) {
+        String input = etAddLabel.getText().toString().trim();
+        if (input != null && input.length() != 0) {
+          PlaceLabelData labelData = getPlaceLabelData(input);
+          if (labelData.getLabelType() == LabelType.NEW_LABEL) {
+            newLabelList.add(labelData);
+          }
+
+          onSuggestion(labelData);
+        }
+      }
+    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int whichButton) {
+        // Do nothing.
+      }
+    });
+
+    addPlaceAlert.show();
+  }
+
+  private PlaceLabelData getPlaceLabelData(String newLabel) {
+    PlaceLabelData newPlaceLabelData;
+    for (PlaceLabelData labelData : suggestedLabelList) {
+      if (labelData.getLabel().equalsIgnoreCase(newLabel)) {
+        labelData.setLabelType(LabelType.ACCEPTED_SUGGESTION);
+        return labelData;
+      }
+    }
+
+    newPlaceLabelData = new PlaceLabelData();
+    newPlaceLabelData.setLabel(newLabel);
+    newPlaceLabelData.setLabelType(LabelType.NEW_LABEL);
+    return newPlaceLabelData;
   }
 
   private List<PlaceLabelData> getPlaceLabels() {
@@ -152,7 +228,7 @@ public class PlacesFragment extends Fragment implements OnTimeSetPlatysListener 
     list.add(get("Happy"));
     list.add(get("Making slow progress at work"));
     list.add(get("Starbucks at mission valley"));
-    
+
     return list;
   }
 
@@ -171,20 +247,20 @@ public class PlacesFragment extends Fragment implements OnTimeSetPlatysListener 
     if (placeExcludeEt != null) {
       placeExcludeEt.setText("");
     }
-    
+
     if (timeEt != null) {
       Calendar cal = Calendar.getInstance();
       labelingTime = cal.getTimeInMillis();
       timeEt.setText(getFormattedTime(cal));
     }
   }
-  
+
   private void saveData() {
     long curTime = System.currentTimeMillis();
-    for (PlaceLabelData label : labelList) {
+    for (PlaceLabelData label : suggestedLabelList) {
       label.setSensingStartTime(labelingTime);
       label.setSensingEndTime(curTime);
-      Log.i("Pradeep", label.getLabel() + ", " + label.getLabelType().toString()); 
+      Log.i("Pradeep", label.getLabel() + ", " + label.getLabelType().toString());
     }
   }
 
@@ -194,5 +270,5 @@ public class PlacesFragment extends Fragment implements OnTimeSetPlatysListener 
         + (cal.get(Calendar.MINUTE) < 10 ? "0" + cal.get(Calendar.MINUTE) : cal
             .get(Calendar.MINUTE)) + " " + (cal.get(Calendar.AM_PM) == 0 ? "AM" : "PM");
   }
-  
+
 }

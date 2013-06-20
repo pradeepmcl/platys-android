@@ -15,10 +15,13 @@ import android.widget.Toast;
 import edu.ncsu.mas.platys.android.R;
 import edu.ncsu.mas.platys.android.ui.fragment.AppsFragment;
 import edu.ncsu.mas.platys.android.ui.fragment.PlacesFragment;
+import edu.ncsu.mas.platys.android.ui.fragment.PlacesFragment.SuggestionClickListener;
 import edu.ncsu.mas.platys.android.ui.fragment.SensorsFragment;
 import edu.ncsu.mas.platys.android.ui.fragment.TimePickerFragment.OnTimeSetPlatysListener;
+import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData;
 
-public class PlatysActivity extends Activity implements OnTimeSetPlatysListener {
+public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
+SuggestionClickListener {
 
   public static final String PLATYS_PREFS = "platys_prefs";
 
@@ -60,11 +63,11 @@ public class PlatysActivity extends Activity implements OnTimeSetPlatysListener 
     mActionBar.setSubtitle(mUsername);
 
     mActionBar
-        .addTab(mActionBar
-            .newTab()
-            .setText(R.string.places)
-            .setTabListener(
-                new TabListener<PlacesFragment>(this, PLACES_TAB_TAG, PlacesFragment.class)));
+    .addTab(mActionBar
+        .newTab()
+        .setText(R.string.places)
+        .setTabListener(
+            new TabListener<PlacesFragment>(this, PLACES_TAB_TAG, PlacesFragment.class)));
 
     mActionBar.addTab(mActionBar
         .newTab()
@@ -150,10 +153,19 @@ public class PlatysActivity extends Activity implements OnTimeSetPlatysListener 
 
   @Override
   public void onTimeSet(int hourOfDay, int minute) {
-    OnTimeSetPlatysListener placesFragment = (OnTimeSetPlatysListener) getFragmentManager()
-        .findFragmentByTag(PLACES_TAB_TAG);
+    PlacesFragment placesFragment = (PlacesFragment) getFragmentManager().findFragmentByTag(
+        PLACES_TAB_TAG);
     if (placesFragment != null) {
       placesFragment.onTimeSet(hourOfDay, minute);
+    }
+  }
+
+  @Override
+  public void onSuggestionClick(PlaceLabelData labelData) {
+    PlacesFragment placesFragment = (PlacesFragment) getFragmentManager().findFragmentByTag(
+        PLACES_TAB_TAG);
+    if (placesFragment != null) {
+      placesFragment.onSuggestion(labelData);
     }
   }
 
