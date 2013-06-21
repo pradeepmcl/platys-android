@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoCompleteTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/atvAddPlaceAlert"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="@string/place_label_description"
+    android:textStyle="italic" >
+
+</AutoCompleteTextView>

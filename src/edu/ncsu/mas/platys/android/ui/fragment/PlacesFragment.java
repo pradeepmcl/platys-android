@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -35,8 +36,8 @@ public class PlacesFragment extends Fragment {
   private EditText placeExcludeEt = null;
 
   private long labelingTime;
-  private final List<PlaceLabelData> suggestedLabelList = new ArrayList<PlaceLabelData>();
-  private final List<PlaceLabelData> newLabelList = new ArrayList<PlaceLabelData>();
+  private final List<PlaceLabelData> placeLabelList = new ArrayList<PlaceLabelData>();
+  private ArrayAdapter<PlaceLabelData> placeLabelListAdapter = null;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -70,13 +71,12 @@ public class PlacesFragment extends Fragment {
     // Place exclude list
     placeExcludeEt = (EditText) view.findViewById(R.id.etExcludeListPlacesFragment);
 
-    suggestedLabelList.addAll(getPlaceLabels());
-    ArrayAdapter<PlaceLabelData> adapter = new PlaceSuggestionArrayAdapter(getActivity(),
-        suggestedLabelList);
+    placeLabelList.addAll(getPlaceLabelSuggestions());
+    placeLabelListAdapter = new PlaceSuggestionArrayAdapter(getActivity(), placeLabelList);
 
     // Place suggestion list
-    ListView lv = (ListView) view.findViewById(R.id.lvSuggestionsPlacesFragment);
-    lv.setAdapter(adapter);
+    ListView placeSuggestionLv = (ListView) view.findViewById(R.id.lvSuggestionsPlacesFragment);
+    placeSuggestionLv.setAdapter(placeLabelListAdapter);
 
     // New label button
     ImageButton newLabelButton = (ImageButton) view.findViewById(R.id.ibAddPlacePlacesFragment);
@@ -171,40 +171,44 @@ public class PlacesFragment extends Fragment {
       } else {
         addToEt.setText(addToListList + ", " + curLabel);
       }
+      placeLabelListAdapter.notifyDataSetChanged();
     }
   }
 
   private void showPlaceInputAlertDialog() {
-    final EditText etAddLabel = new EditText(getActivity());
+    LayoutInflater inflater = LayoutInflater.from(getActivity());
+    final View inputView = inflater.inflate(R.layout.view_add_place_alert, null);
     final AlertDialog.Builder addPlaceAlert = new AlertDialog.Builder(getActivity())
-        .setTitle("Enter a Place Label")
-        .setMessage("A place cane be space, activity, or social circle.").setView(etAddLabel)
-        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int whichButton) {
-            String input = etAddLabel.getText().toString().trim();
-            if (input != null && input.length() != 0) {
-              PlaceLabelData labelData = getPlaceLabelData(input);
-              if (labelData.getLabelType() == LabelType.NEW_LABEL) {
-                newLabelList.add(labelData);
-              }
+    .setTitle(R.string.PlacesFragment_add_place_alert_title)
+    .setMessage(R.string.PlacesFragment_add_place_alert_message).setView(inputView)
+    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int whichButton) {
+        AutoCompleteTextView inputAtv = (AutoCompleteTextView) inputView
+            .findViewById(R.id.atvAddPlaceAlert);
+        String input = inputAtv.getText().toString().trim();
+        if (input != null && input.length() != 0) {
+          PlaceLabelData labelData = getPlaceLabelData(input);
+          if (labelData.getLabelType() == LabelType.NEW_LABEL) {
+            placeLabelList.add(labelData);
+          }
 
-              onSuggestion(labelData);
-            }
-          }
-        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int whichButton) {
-            // Do nothing.
-          }
-        });
+          onSuggestion(labelData);
+        }
+      }
+    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int whichButton) {
+        // Do nothing.
+      }
+    });
 
     addPlaceAlert.show();
   }
 
   private PlaceLabelData getPlaceLabelData(String newLabel) {
     PlaceLabelData newPlaceLabelData;
-    for (PlaceLabelData labelData : suggestedLabelList) {
+    for (PlaceLabelData labelData : placeLabelList) {
       if (labelData.getLabel().equalsIgnoreCase(newLabel)) {
         labelData.setLabelType(LabelType.ACCEPTED_SUGGESTION);
         return labelData;
@@ -217,7 +221,7 @@ public class PlacesFragment extends Fragment {
     return newPlaceLabelData;
   }
 
-  private List<PlaceLabelData> getPlaceLabels() {
+  private List<PlaceLabelData> getPlaceLabelSuggestions() {
     List<PlaceLabelData> list = new ArrayList<PlaceLabelData>();
     list.add(get("Home"));
     list.add(get("Colleagues"));
@@ -250,6 +254,11 @@ public class PlacesFragment extends Fragment {
       labelingTime = cal.getTimeInMillis();
       timeEt.setText(getFormattedTime(cal));
     }
+
+    for (PlaceLabelData label : placeLabelList) {
+      label.setLabelType(LabelType.IGNORED_SUGGESTION);
+    }
+    placeLabelListAdapter.notifyDataSetChanged();
   }
 
   private void saveData() {
@@ -257,23 +266,22 @@ public class PlacesFragment extends Fragment {
     ArrayList<String> labelList = new ArrayList<String>();
     ArrayList<LabelType> labelTypeList = new ArrayList<LabelType>();
 
-    for (PlaceLabelData label : suggestedLabelList) {
+    for (PlaceLabelData label : placeLabelList) {
       labelList.add(label.getLabel());
       labelTypeList.add(label.getLabelType());
     }
 
     Intent platysSaveLabelsIntent = new Intent(getActivity(), PlatysReceiver.class);
     platysSaveLabelsIntent.setAction(PlatysReceiver.ACTION_ONE_TIME);
-    
+
     platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_TASK,
         PlatysReceiver.PlatysTask.PLATYS_TASK_SAVE_LABELS);
     platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABELING_START_TIME, curTime);
     platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABELING_END_TIME, labelingTime);
     platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABELS_LIST, labelList);
     platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABEL_TYPES_LIST, labelTypeList);
-    
-    getActivity().sendBroadcast(platysSaveLabelsIntent);
 
+    getActivity().sendBroadcast(platysSaveLabelsIntent);
   }
 
   private static String getFormattedTime(Calendar cal) {

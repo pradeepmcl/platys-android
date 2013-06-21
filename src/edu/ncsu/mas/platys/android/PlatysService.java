@@ -122,14 +122,15 @@ public class PlatysService extends Service {
           break;
         case PLATYS_TASK_SAVE_LABELS:
           Log.i(TAG, "Perform Platys save labels action.");
-          runningThread = new Thread(new PlaceLabelSaver(getApplicationContext(), mServiceHandler,
-              mSensorDbHelper, pendingTaskIntent));
+          runningThread = new Thread(new PlaceLabelSaver(mServiceHandler, mSensorDbHelper,
+              pendingTaskIntent));
           runningThread.start();
           break;
         default:
           break;
         }
       }
+
     } else {
       Log.i(TAG, "Waiting for running thread to finish.");
       // Do nothing. Wait for running thread to finish.
@@ -149,7 +150,7 @@ public class PlatysService extends Service {
         Log.i(TAG, "SyncHandler finished.");
         OpenHelperManager.releaseHelper();
         runningThread = null;
-        
+
       } else if (msg.what == PlatysService.PLATYS_MSG_SAVE_LABELS_FINISHED) {
         Log.i(TAG, "LabelSaver finished.");
         runningThread = null;

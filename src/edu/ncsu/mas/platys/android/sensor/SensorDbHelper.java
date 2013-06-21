@@ -12,7 +12,6 @@ import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
 import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
-import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData;
 import edu.ncsu.mas.platys.common.sensordata.SensorDbInstanceInfo;
 
 public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
@@ -31,8 +30,7 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
       for (PlatysSensorEnum sensor : PlatysSensorEnum.values()) {
         TableUtils.createTableIfNotExists(connectionSource, sensor.getDataClass());
       }
-      TableUtils.createTableIfNotExists(connectionSource, PlaceLabelData.class);
-      
+
       addDbInstanceInfo();
     } catch (SQLException e) {
       Log.e(SensorDbHelper.class.getName(), "Can't create database", e);

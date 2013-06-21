@@ -35,5 +35,8 @@
     <string name="places">Places</string>
     <string name="sensors">Sensors</string>
     <string name="apps">Apps</string>
+    <string name="PlacesFragment_add_place_alert_title">Add Place</string>
+    <string name="PlacesFragment_add_place_alert_message">A place label could describe a spatial or social aspect, user activity, or emotion associated with the place.</string>
+    <string name="place_label_description">Enter a new place label.</string>
 
 </resources>

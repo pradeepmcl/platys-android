@@ -101,7 +101,7 @@ public class WiFiAccessPointSensor implements Sensor {
           @Override
           public Void call() throws SQLException {
             WifiAccessPointData wifiApData = new WifiAccessPointData();
-            wifiApData.setSensingEndTime(mSensingStartTime);
+            wifiApData.setSensingStartTime(mSensingStartTime);
             wifiApData.setSensingEndTime(System.currentTimeMillis());
             wifiApData.setIsConnected(false);
             for (ScanResult ap : apList) {
