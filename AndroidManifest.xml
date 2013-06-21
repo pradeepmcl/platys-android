@@ -13,10 +13,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -24,7 +24,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".ui.PlatysActivity"
+            android:name="edu.ncsu.mas.platys.android.ui.PlatysActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,7 +33,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name="edu.ncsu.mas.platys.android.PlatysService" android:process=":PlatysService"/>
+        <service
+            android:name="edu.ncsu.mas.platys.android.PlatysService"
+            android:process=":PlatysService" />
 
         <activity android:name="com.dropbox.sync.android.DbxAuthActivity" />
         <activity
@@ -54,15 +56,21 @@
             android:enabled="true"
             android:exported="false"
             android:label="Dropbox Sync" />
-        
-        <receiver android:name="PlatysReceiver">
+
+        <receiver android:name="edu.ncsu.mas.platys.android.PlatysReceiver" >
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-                <action android:name="platys.intent.action.START_SENSING"/>
-                <action android:name="platys.intent.action.START_SYNCING"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="platys.intent.action.START_SENSING" />
+                <action android:name="platys.intent.action.START_SYNCING" />
             </intent-filter>
         </receiver>
-        <activity android:name=".ui.ServerModeChooserActivity"></activity>
+
+        <activity android:name="edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity" >
+        </activity>
+        <activity
+            android:name="edu.ncsu.mas.platys.android.ui.DbxModeChooserActivity"
+            android:label="@string/title_activity_dbx_mode_chooser" >
+        </activity>
     </application>
 
 </manifest>

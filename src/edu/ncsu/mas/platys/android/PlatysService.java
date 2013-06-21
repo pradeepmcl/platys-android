@@ -19,7 +19,7 @@ import edu.ncsu.mas.platys.android.labels.PlaceLabelSaver;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.android.sensor.SensorEnum;
 import edu.ncsu.mas.platys.android.sensor.SensorPoller;
-import edu.ncsu.mas.platys.android.sync.DbxSyncer;
+import edu.ncsu.mas.platys.android.sync.DbxAppFolderSyncer;
 
 public class PlatysService extends Service {
 
@@ -116,7 +116,7 @@ public class PlatysService extends Service {
           break;
         case PLATYS_TASK_SYNC:
           Log.i(TAG, "Perform Platys sync action.");
-          runningThread = new Thread(new DbxSyncer(getApplicationContext(), mServiceHandler,
+          runningThread = new Thread(new DbxAppFolderSyncer(getApplicationContext(), mServiceHandler,
               OpenHelperManager.getHelper(getApplicationContext(), SensorDbHelper.class)));
           runningThread.start();
           break;

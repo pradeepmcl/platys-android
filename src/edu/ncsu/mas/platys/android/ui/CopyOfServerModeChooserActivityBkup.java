@@ -15,24 +15,18 @@ import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.android.AndroidAuthSession;
-import com.dropbox.client2.exception.DropboxException;
-import com.dropbox.client2.session.AccessTokenPair;
-import com.dropbox.client2.session.AppKeyPair;
-import com.dropbox.client2.session.Session.AccessType;
 import com.dropbox.sync.android.DbxAccountManager;
 
 import edu.ncsu.mas.platys.android.R;
 import edu.ncsu.mas.platys.common.constasnts.SyncConstants;
 
-public class ServerModeChooserActivity extends Activity {
+public class CopyOfServerModeChooserActivityBkup extends Activity {
 
   public enum ServerMode {
-    DROPBOX_APP_FOLDER, DROPBOX_SHAREABLE_FOLDER;
+    DROPBOX, PLATYS_SEVER;
   }
 
-  public static final String TAG = "Platys" + ServerModeChooserActivity.class.getName();
+  public static final String TAG = "Platys" + CopyOfServerModeChooserActivityBkup.class.getName();
 
   private ServerMode mServerMode;
   private String mUsername;
@@ -43,8 +37,6 @@ public class ServerModeChooserActivity extends Activity {
 
   private DbxAccountManager mDbxAcctMgr;
   private static final int REQUEST_LINK_TO_DBX = 0;
-  
-  private DropboxAPI<AndroidAuthSession> mDBApi;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -67,9 +59,9 @@ public class ServerModeChooserActivity extends Activity {
             setDescriptionViewVisibility(_mode, View.GONE);
           }
           if (checkedButton.getText().equals(getString(R.string.dropbox))) {
-            mServerMode = ServerMode.DROPBOX_APP_FOLDER;
+            mServerMode = ServerMode.DROPBOX;
           } else if (checkedButton.getText().equals(getString(R.string.platys_server))) {
-            mServerMode = ServerMode.DROPBOX_SHAREABLE_FOLDER;
+            mServerMode = ServerMode.PLATYS_SEVER;
           }
           setDescriptionViewVisibility(mServerMode, View.VISIBLE);
         }
@@ -80,10 +72,10 @@ public class ServerModeChooserActivity extends Activity {
   private void setDescriptionViewVisibility(ServerMode mode, int visibility) {
     TextView modeDescView;
     switch (mode) {
-    case DROPBOX_APP_FOLDER:
+    case DROPBOX:
       modeDescView = mDropboxDesc;
       break;
-    case DROPBOX_SHAREABLE_FOLDER:
+    case PLATYS_SEVER:
       modeDescView = mPlatysServerDesc;
       break;
     default:
@@ -113,7 +105,7 @@ public class ServerModeChooserActivity extends Activity {
 
   private void handleServerChoice(ServerMode mode) {
     switch (mode) {
-    case DROPBOX_APP_FOLDER:
+    case DROPBOX:
       mDbxAcctMgr = DbxAccountManager.getInstance(getApplicationContext(),
           SyncConstants.getDbxappkey(), SyncConstants.getDbxappsecret());
       if (mDbxAcctMgr.hasLinkedAccount()) {
@@ -124,34 +116,14 @@ public class ServerModeChooserActivity extends Activity {
         mDbxAcctMgr.startLink(this, REQUEST_LINK_TO_DBX);
       }
       break;
-    case DROPBOX_SHAREABLE_FOLDER:
-      AppKeyPair appKeys = new AppKeyPair("x0qfnpdsd16e1kw", "f85z9yjy3x8fem1");
-      AndroidAuthSession session = new AndroidAuthSession(appKeys, AccessType.APP_FOLDER);
-      mDBApi = new DropboxAPI<AndroidAuthSession>(session);
-      mDBApi.getSession().startAuthentication(ServerModeChooserActivity.this);
+    case PLATYS_SEVER:
+      // TODO
       break;
     default:
       return;
     }
   }
 
-  protected void onResume() {
-    super.onResume();
-
-    if (mDBApi.getSession().authenticationSuccessful()) {
-      try {
-        mDBApi.getSession().finishAuthentication();
-        AccessTokenPair tokens = mDBApi.getSession().getAccessTokenPair();
-        mUsername = mDBApi.accountInfo().displayName;
-        storeServerDetails(tokens);
-      } catch (IllegalStateException e) {
-        Log.i("DbAuthLog", "Error authenticating", e);
-      } catch (DropboxException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-  
   private void storeServerDetails() {
     SharedPreferences.Editor mPreferencesEditor = getSharedPreferences(PlatysActivity.PLATYS_PREFS,
         Context.MODE_PRIVATE).edit();
@@ -159,22 +131,12 @@ public class ServerModeChooserActivity extends Activity {
     mPreferencesEditor.putString(PlatysActivity.PREFS_KEY_USERNAME, mUsername);
     mPreferencesEditor.commit();
   }
-  
-  private void storeServerDetails(AccessTokenPair tokens) {
-    SharedPreferences.Editor mPreferencesEditor = getSharedPreferences(PlatysActivity.PLATYS_PREFS,
-        Context.MODE_PRIVATE).edit();
-    mPreferencesEditor.putString(PlatysActivity.PREFS_KEY_SERVER_MODE, mServerMode.name());
-    mPreferencesEditor.putString(PlatysActivity.PREFS_KEY_USERNAME, mUsername);
-    mPreferencesEditor.putString(PlatysActivity.PREFS_DBX_ACCESS_KEY_NAME, tokens.key);
-    mPreferencesEditor.putString(PlatysActivity.PREFS_DBX_ACCESS_KEY_SECRET, tokens.secret);
-    mPreferencesEditor.commit();
-  }
 
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     if (requestCode == REQUEST_LINK_TO_DBX) {
       if (resultCode == Activity.RESULT_OK) {
-        handleServerChoice(ServerMode.DROPBOX_APP_FOLDER);
+        handleServerChoice(ServerMode.DROPBOX);
       } else {
         Log.e(TAG, "Link to Dropbox failed or was cancelled.");
       }

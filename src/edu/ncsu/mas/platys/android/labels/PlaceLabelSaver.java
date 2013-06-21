@@ -28,7 +28,7 @@ public class PlaceLabelSaver implements Runnable {
   private final Intent mDetailsIntent;
 
   public PlaceLabelSaver(Handler serviceHandler, SensorDbHelper sensorDbHelper, Intent intent) {
-    Log.i(TAG, "Creating SyncHandler.");
+    Log.i(TAG, "Creating PlaceLabelSaver.");
     mServiceHandler = serviceHandler;
     mSensorDbHelper = sensorDbHelper;
     mDetailsIntent = intent;

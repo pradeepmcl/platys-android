@@ -71,6 +71,7 @@ public class PlacesFragment extends Fragment {
     // Place exclude list
     placeExcludeEt = (EditText) view.findViewById(R.id.etExcludeListPlacesFragment);
 
+    placeLabelList.clear();
     placeLabelList.addAll(getPlaceLabelSuggestions());
     placeLabelListAdapter = new PlaceSuggestionArrayAdapter(getActivity(), placeLabelList);
 
@@ -99,7 +100,9 @@ public class PlacesFragment extends Fragment {
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
     case R.id.menuSavePlacesFragment:
+      initiateSensing();
       saveData();
+      initiateSyncing();
       discardAllData();
       return true;
     case R.id.menuDiscardPlacesFragment:
@@ -179,29 +182,29 @@ public class PlacesFragment extends Fragment {
     LayoutInflater inflater = LayoutInflater.from(getActivity());
     final View inputView = inflater.inflate(R.layout.view_add_place_alert, null);
     final AlertDialog.Builder addPlaceAlert = new AlertDialog.Builder(getActivity())
-    .setTitle(R.string.PlacesFragment_add_place_alert_title)
-    .setMessage(R.string.PlacesFragment_add_place_alert_message).setView(inputView)
-    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-      @Override
-      public void onClick(DialogInterface dialog, int whichButton) {
-        AutoCompleteTextView inputAtv = (AutoCompleteTextView) inputView
-            .findViewById(R.id.atvAddPlaceAlert);
-        String input = inputAtv.getText().toString().trim();
-        if (input != null && input.length() != 0) {
-          PlaceLabelData labelData = getPlaceLabelData(input);
-          if (labelData.getLabelType() == LabelType.NEW_LABEL) {
-            placeLabelList.add(labelData);
-          }
+        .setTitle(R.string.PlacesFragment_add_place_alert_title)
+        .setMessage(R.string.PlacesFragment_add_place_alert_message).setView(inputView)
+        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int whichButton) {
+            AutoCompleteTextView inputAtv = (AutoCompleteTextView) inputView
+                .findViewById(R.id.atvAddPlaceAlert);
+            String input = inputAtv.getText().toString().trim();
+            if (input != null && input.length() != 0) {
+              PlaceLabelData labelData = getPlaceLabelData(input);
+              if (labelData.getLabelType() == LabelType.NEW_LABEL) {
+                placeLabelList.add(labelData);
+              }
 
-          onSuggestion(labelData);
-        }
-      }
-    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-      @Override
-      public void onClick(DialogInterface dialog, int whichButton) {
-        // Do nothing.
-      }
-    });
+              onSuggestion(labelData);
+            }
+          }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int whichButton) {
+            // Do nothing.
+          }
+        });
 
     addPlaceAlert.show();
   }
@@ -282,6 +285,26 @@ public class PlacesFragment extends Fragment {
     platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABEL_TYPES_LIST, labelTypeList);
 
     getActivity().sendBroadcast(platysSaveLabelsIntent);
+  }
+
+  private void initiateSensing() {
+    Intent platysSenseIntent = new Intent(getActivity(), PlatysReceiver.class);
+    platysSenseIntent.setAction(PlatysReceiver.ACTION_ONE_TIME);
+
+    platysSenseIntent.putExtra(PlatysReceiver.EXTRA_TASK,
+        PlatysReceiver.PlatysTask.PLATYS_TASK_SENSE);
+
+    getActivity().sendBroadcast(platysSenseIntent);
+  }
+
+  private void initiateSyncing() {
+    Intent platysSenseIntent = new Intent(getActivity(), PlatysReceiver.class);
+    platysSenseIntent.setAction(PlatysReceiver.ACTION_ONE_TIME);
+
+    platysSenseIntent.putExtra(PlatysReceiver.EXTRA_TASK,
+        PlatysReceiver.PlatysTask.PLATYS_TASK_SYNC);
+
+    getActivity().sendBroadcast(platysSenseIntent);
   }
 
   private static String getFormattedTime(Calendar cal) {

@@ -27,6 +27,8 @@ SuggestionClickListener {
 
   public static final String PREFS_KEY_SERVER_MODE = "server_mode";
   public static final String PREFS_KEY_USERNAME = "username";
+  public static final String PREFS_DBX_ACCESS_KEY_NAME = "dbx_access_key_name";
+  public static final String PREFS_DBX_ACCESS_KEY_SECRET = "dbx_access_key_secret";
 
   private static final String PLACES_TAB_TAG = "places";
   private static final String SENSORS_TAB_TAG = "sensors";
