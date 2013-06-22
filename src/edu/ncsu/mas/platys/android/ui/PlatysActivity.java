@@ -5,9 +5,7 @@ import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,48 +25,27 @@ public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
   private static final String SENSORS_TAB_TAG = "sensors";
   private static final String APPS_TAB_TAG = "apps";
 
-  private SharedPreferences mPreferences;
-
   private ActionBar mActionBar;
 
-  private ServerModeChooserActivity.ServerMode mServerMode;
   private String mUsername;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    mPreferences = getSharedPreferences(PLATYS_PREFS, Context.MODE_PRIVATE);
-
-    try {
-      mServerMode = ServerModeChooserActivity.ServerMode.valueOf(mPreferences.getString(
-          PREFS_KEY_SERVER_MODE, ""));
-      mUsername = mPreferences.getString(PREFS_KEY_USERNAME, "");
-    } catch (IllegalArgumentException e) {
-      mServerMode = null;
-    }
-
-    if (mServerMode == null || mUsername.length() == 0) {
+    mUsername = ServerModeChooserActivity.getUsername(this.getApplicationContext());
+    if (mUsername.length() == 0) {
       startActivity(new Intent(this, ServerModeChooserActivity.class));
+    } else {
+      setupTabs();
     }
   }
 
   @Override
   protected void onResume() {
     super.onResume();
-
-    try {
-      mServerMode = ServerModeChooserActivity.ServerMode.valueOf(mPreferences.getString(
-          PREFS_KEY_SERVER_MODE, ""));
-      mUsername = mPreferences.getString(PREFS_KEY_USERNAME, "");
-    } catch (IllegalArgumentException e) {
-      mServerMode = null;
-    }
-
-    if (mServerMode == null || mUsername.length() == 0) {
+    if (mUsername.length() == 0) {
       startActivity(new Intent(this, ServerModeChooserActivity.class));
     }
-
-    setupTabs();
   }
 
   @Override

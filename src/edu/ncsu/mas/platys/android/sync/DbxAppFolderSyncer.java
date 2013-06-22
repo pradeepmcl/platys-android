@@ -8,13 +8,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.dropbox.sync.android.DbxAccountManager;
+/*import com.dropbox.sync.android.DbxAccountManager;
 import com.dropbox.sync.android.DbxException;
 import com.dropbox.sync.android.DbxException.Unauthorized;
 import com.dropbox.sync.android.DbxFile;
 import com.dropbox.sync.android.DbxFileSystem;
 import com.dropbox.sync.android.DbxPath;
-import com.dropbox.sync.android.DbxPath.InvalidPathException;
+import com.dropbox.sync.android.DbxPath.InvalidPathException;*/
 
 import edu.ncsu.mas.platys.android.PlatysService;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
@@ -28,7 +28,7 @@ public class DbxAppFolderSyncer implements Runnable {
   private static final String mDbxAppKey = "x6cj580qfc2zjxu";
   private static final String mDbxAppSecret = "5bpxqwkyym3zwol";
 
-  private final DbxAccountManager mDbxAcctMgr;
+  // private final DbxAccountManager mDbxAcctMgr;
 
   private final Context mContext;
   private final Handler mServiceHandler;
@@ -40,8 +40,8 @@ public class DbxAppFolderSyncer implements Runnable {
     mServiceHandler = serviceHandler;
     mSensorDbHelper = sensorDbHelper;
 
-    mDbxAcctMgr = DbxAccountManager.getInstance(mContext.getApplicationContext(), mDbxAppKey,
-        mDbxAppSecret);
+    /*mDbxAcctMgr = DbxAccountManager.getInstance(mContext.getApplicationContext(), mDbxAppKey,
+        mDbxAppSecret);*/
   }
 
   @Override
@@ -49,11 +49,11 @@ public class DbxAppFolderSyncer implements Runnable {
     Log.i(TAG, "Running SyncHandler.");
     final File sensorDbFile = mContext.getDatabasePath(mSensorDbHelper.getDatabaseName());
 
-    DbxFile syncFile = null;
+    //DbxFile syncFile = null;
     int backupSuccess = 0;
 
     try {
-      if (mDbxAcctMgr.hasLinkedAccount() && sensorDbFile.length() != 0) {
+      /*if (mDbxAcctMgr.hasLinkedAccount() && sensorDbFile.length() != 0) {
         DbxFileSystem dbxFs = DbxFileSystem.forAccount(mDbxAcctMgr.getLinkedAccount());
         syncFile = dbxFs.create(new DbxPath(SENSOR_SYNC_DIR + System.currentTimeMillis() + ".db"));
         syncFile.writeFromExistingFile(sensorDbFile, true); // Steal file
@@ -66,11 +66,11 @@ public class DbxAppFolderSyncer implements Runnable {
     } catch (DbxException e) {
       Log.e(TAG, "Dropbox exception", e);
     } catch (IOException e) {
-      Log.e(TAG, "I/O Exception", e);
+      Log.e(TAG, "I/O Exception", e);*/
     } finally {
-      if (syncFile != null) {
+      /*if (syncFile != null) {
         syncFile.close();
-      }
+      }*/
 
       Log.i(TAG, "Finishing backup. Success? " + backupSuccess);
 

@@ -42,7 +42,7 @@
             android:name="com.dropbox.client2.android.AuthActivity"
             android:launchMode="singleTask" >
             <intent-filter>
-                <data android:scheme="db-x6cj580qfc2zjxu" />
+                <data android:scheme="db-x0qfnpdsd16e1kw" />
 
                 <action android:name="android.intent.action.VIEW" />
 
@@ -51,11 +51,11 @@
             </intent-filter>
         </activity>
 
-        <service
+        <!--  <service
             android:name="com.dropbox.sync.android.DbxSyncService"
             android:enabled="true"
             android:exported="false"
-            android:label="Dropbox Sync" />
+            android:label="Dropbox Sync" />-->
 
         <receiver android:name="edu.ncsu.mas.platys.android.PlatysReceiver" >
             <intent-filter>
