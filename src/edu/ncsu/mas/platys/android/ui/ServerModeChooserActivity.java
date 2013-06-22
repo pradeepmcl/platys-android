@@ -28,6 +28,14 @@ import edu.ncsu.mas.platys.common.constasnts.SyncConstants;
 
 public class ServerModeChooserActivity extends Activity {
 
+  public static final String PLATYS_PREFS = "platys_server_prefs";
+
+  public static final String PREFS_KEY_SERVER_MODE = "server_mode";
+  public static final String PREFS_KEY_USER_EMAIL = "user_email";
+  public static final String PREFS_KEY_USERNAME = "username";
+  public static final String PREFS_DBX_ACCESS_KEY_NAME = "dbx_access_key_name";
+  public static final String PREFS_DBX_ACCESS_KEY_SECRET = "dbx_access_key_secret";
+
   public enum ServerMode {
     DROPBOX_APP_FOLDER, DROPBOX_SHAREABLE_FOLDER;
   }
@@ -43,7 +51,7 @@ public class ServerModeChooserActivity extends Activity {
 
   private DbxAccountManager mDbxAcctMgr;
   private static final int REQUEST_LINK_TO_DBX = 0;
-  
+
   private DropboxAPI<AndroidAuthSession> mDBApi;
 
   @Override
@@ -111,6 +119,43 @@ public class ServerModeChooserActivity extends Activity {
     }
   }
 
+  @Override
+  protected void onResume() {
+    super.onResume();
+
+    if (mDBApi.getSession().authenticationSuccessful()) {
+      try {
+        mDBApi.getSession().finishAuthentication();
+        AccessTokenPair tokens = mDBApi.getSession().getAccessTokenPair();
+        mUsername = mDBApi.accountInfo().displayName;
+        storeServerDetails(tokens);
+        finish();
+      } catch (IllegalStateException e) {
+        Log.i("DbAuthLog", "Error authenticating", e);
+      } catch (DropboxException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    if (requestCode == REQUEST_LINK_TO_DBX) {
+      if (resultCode == Activity.RESULT_OK) {
+        handleServerChoice(ServerMode.DROPBOX_APP_FOLDER);
+      } else {
+        Log.e(TAG, "Link to Dropbox failed or was cancelled.");
+      }
+    } else {
+      super.onActivityResult(requestCode, resultCode, data);
+    }
+  }
+
+  private boolean isConnectedToServer() {
+
+    return true;
+  }
+
   private void handleServerChoice(ServerMode mode) {
     switch (mode) {
     case DROPBOX_APP_FOLDER:
@@ -135,23 +180,6 @@ public class ServerModeChooserActivity extends Activity {
     }
   }
 
-  protected void onResume() {
-    super.onResume();
-
-    if (mDBApi.getSession().authenticationSuccessful()) {
-      try {
-        mDBApi.getSession().finishAuthentication();
-        AccessTokenPair tokens = mDBApi.getSession().getAccessTokenPair();
-        mUsername = mDBApi.accountInfo().displayName;
-        storeServerDetails(tokens);
-      } catch (IllegalStateException e) {
-        Log.i("DbAuthLog", "Error authenticating", e);
-      } catch (DropboxException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-  
   private void storeServerDetails() {
     SharedPreferences.Editor mPreferencesEditor = getSharedPreferences(PlatysActivity.PLATYS_PREFS,
         Context.MODE_PRIVATE).edit();
@@ -159,7 +187,7 @@ public class ServerModeChooserActivity extends Activity {
     mPreferencesEditor.putString(PlatysActivity.PREFS_KEY_USERNAME, mUsername);
     mPreferencesEditor.commit();
   }
-  
+
   private void storeServerDetails(AccessTokenPair tokens) {
     SharedPreferences.Editor mPreferencesEditor = getSharedPreferences(PlatysActivity.PLATYS_PREFS,
         Context.MODE_PRIVATE).edit();
@@ -168,18 +196,5 @@ public class ServerModeChooserActivity extends Activity {
     mPreferencesEditor.putString(PlatysActivity.PREFS_DBX_ACCESS_KEY_NAME, tokens.key);
     mPreferencesEditor.putString(PlatysActivity.PREFS_DBX_ACCESS_KEY_SECRET, tokens.secret);
     mPreferencesEditor.commit();
-  }
-
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (requestCode == REQUEST_LINK_TO_DBX) {
-      if (resultCode == Activity.RESULT_OK) {
-        handleServerChoice(ServerMode.DROPBOX_APP_FOLDER);
-      } else {
-        Log.e(TAG, "Link to Dropbox failed or was cancelled.");
-      }
-    } else {
-      super.onActivityResult(requestCode, resultCode, data);
-    }
   }
 }

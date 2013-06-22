@@ -21,14 +21,7 @@ import edu.ncsu.mas.platys.android.ui.fragment.TimePickerFragment.OnTimeSetPlaty
 import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData;
 
 public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
-SuggestionClickListener {
-
-  public static final String PLATYS_PREFS = "platys_prefs";
-
-  public static final String PREFS_KEY_SERVER_MODE = "server_mode";
-  public static final String PREFS_KEY_USERNAME = "username";
-  public static final String PREFS_DBX_ACCESS_KEY_NAME = "dbx_access_key_name";
-  public static final String PREFS_DBX_ACCESS_KEY_SECRET = "dbx_access_key_secret";
+    SuggestionClickListener {
 
   private static final String PLACES_TAB_TAG = "places";
   private static final String SENSORS_TAB_TAG = "sensors";
@@ -57,28 +50,6 @@ SuggestionClickListener {
     if (mServerMode == null || mUsername.length() == 0) {
       startActivity(new Intent(this, ServerModeChooserActivity.class));
     }
-
-    mActionBar = getActionBar();
-    mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
-    mActionBar.setTitle(getString(R.string.app_name));
-    mActionBar.setSubtitle(mUsername);
-
-    mActionBar
-    .addTab(mActionBar
-        .newTab()
-        .setText(R.string.places)
-        .setTabListener(
-            new TabListener<PlacesFragment>(this, PLACES_TAB_TAG, PlacesFragment.class)));
-
-    mActionBar.addTab(mActionBar
-        .newTab()
-        .setText(R.string.sensors)
-        .setTabListener(
-            new TabListener<SensorsFragment>(this, SENSORS_TAB_TAG, SensorsFragment.class)));
-
-    mActionBar.addTab(mActionBar.newTab().setText(R.string.apps)
-        .setTabListener(new TabListener<AppsFragment>(this, APPS_TAB_TAG, AppsFragment.class)));
   }
 
   @Override
@@ -96,6 +67,8 @@ SuggestionClickListener {
     if (mServerMode == null || mUsername.length() == 0) {
       startActivity(new Intent(this, ServerModeChooserActivity.class));
     }
+
+    setupTabs();
   }
 
   @Override
@@ -103,6 +76,30 @@ SuggestionClickListener {
     MenuInflater inflater = getMenuInflater();
     inflater.inflate(R.menu.platys_home, menu);
     return true;
+  }
+
+  private void setupTabs() {
+    mActionBar = getActionBar();
+    mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+    mActionBar.setTitle(getString(R.string.app_name));
+    mActionBar.setSubtitle(mUsername);
+
+    mActionBar
+        .addTab(mActionBar
+            .newTab()
+            .setText(R.string.places)
+            .setTabListener(
+                new TabListener<PlacesFragment>(this, PLACES_TAB_TAG, PlacesFragment.class)));
+
+    mActionBar.addTab(mActionBar
+        .newTab()
+        .setText(R.string.sensors)
+        .setTabListener(
+            new TabListener<SensorsFragment>(this, SENSORS_TAB_TAG, SensorsFragment.class)));
+
+    mActionBar.addTab(mActionBar.newTab().setText(R.string.apps)
+        .setTabListener(new TabListener<AppsFragment>(this, APPS_TAB_TAG, AppsFragment.class)));
   }
 
   public static class TabListener<T extends Fragment> implements ActionBar.TabListener {
