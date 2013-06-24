@@ -21,7 +21,7 @@
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="@string/pick_time"
             android:padding="6dp"
-            android:src="@drawable/ic_dark_device_access_time" />
+            android:src="@drawable/ic_device_access_time" />
 
         <View
             android:id="@+id/vDividerPickTimePlacesFragment"
@@ -88,7 +88,7 @@
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="@string/add_place"
             android:padding="6dp"
-            android:src="@drawable/ic_dark_collections_new_label" />
+            android:src="@drawable/ic_collections_new_label" />
         
         <View
             android:id="@+id/vDividerAddPlacePlacesFragment"
@@ -191,7 +191,7 @@
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="@string/refresh"
             android:padding="6dp"
-            android:src="@drawable/ic_dark_navigation_refresh" />
+            android:src="@drawable/ic_navigation_refresh" />
 
         <View
             android:id="@+id/vDividerRefreshPlaceSuggestionsHeader"

@@ -40,7 +40,7 @@
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@string/refresh"
         android:padding="5dp"
-        android:src="@drawable/ic_dark_navigation_refresh" />
+        android:src="@drawable/ic_navigation_refresh" />
 
     <View
         android:id="@+id/vDividerRefreshPlaceSuggestionsHeader"

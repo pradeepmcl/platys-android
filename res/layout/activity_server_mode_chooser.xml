@@ -6,45 +6,46 @@
     android:padding="5dp" >
 
     <TextView
-        android:id="@+id/modeChooserDescr"
+        android:id="@+id/tvServerModeDescServerModeChooser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/mode_choose"
         android:textAppearance="?android:attr/textAppearance" />
 
     <RadioGroup
-        android:id="@+id/modesRadioGroup"
+        android:id="@+id/rgServerModesServerModelChooser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
-        android:layout_marginTop="5dp" >
+        android:layout_marginTop="5dp"
+        android:padding="6dp" >
 
         <RadioButton
-            android:id="@+id/dropboxModeRadioButton"
+            android:id="@+id/rbDbxAppFolderModeServerModeChooser"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/dropbox" />
+            android:text="@string/activity_server_mode_chooser_dropbox_app_folder" />
 
         <RadioButton
-            android:id="@+id/serverModeRadioButton"
+            android:id="@+id/rbDbxSharableFolderModeServerModeChooser"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/platys_server" />
+            android:text="@string/activity_server_mode_chooser_dropbox_sharable_folder" />
     </RadioGroup>
 
     <TextView
-        android:id="@+id/dropboxModeDesc"
+        android:id="@+id/tvDbxAppFolderModeDescServerModeChooser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/dropbox_mode_desc"
+        android:text="@string/activity_server_mode_chooser_dropbox_app_folder_mode_desc"
         android:textAppearance="?android:attr/textAppearance"
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/serverModeDesc"
+        android:id="@+id/tvDbxSharableFolderModeDescServerModeChooser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/server_mode_desc"
+        android:text="@string/activity_server_mode_chooser_dropbox_sharable_folder_mode_desc"
         android:textAppearance="?android:attr/textAppearance"
         android:visibility="gone" />
 

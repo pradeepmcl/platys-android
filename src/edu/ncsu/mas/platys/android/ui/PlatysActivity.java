@@ -21,11 +21,13 @@ import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData;
 public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
     SuggestionClickListener {
 
+  // private static final String TAG = PlatysActivity.class.getSimpleName();
+
   private static final String PLACES_TAB_TAG = "places";
   private static final String SENSORS_TAB_TAG = "sensors";
   private static final String APPS_TAB_TAG = "apps";
 
-  private ActionBar mActionBar;
+  private ActionBar mActionBar = null;
 
   private String mUsername;
 
@@ -35,16 +37,15 @@ public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
     mUsername = ServerModeChooserActivity.getUsername(this.getApplicationContext());
     if (mUsername.length() == 0) {
       startActivity(new Intent(this, ServerModeChooserActivity.class));
-    } else {
-      setupTabs();
     }
   }
 
   @Override
   protected void onResume() {
     super.onResume();
-    if (mUsername.length() == 0) {
-      startActivity(new Intent(this, ServerModeChooserActivity.class));
+    mUsername = ServerModeChooserActivity.getUsername(this.getApplicationContext());
+    if (mUsername.length() != 0 && mActionBar == null) {
+      setupTabs();
     }
   }
 

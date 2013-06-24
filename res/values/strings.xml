@@ -7,10 +7,16 @@
     <string name="place_label_hint">Enter place label.</string>
     <string name="submit">Submit</string>
     <string name="mode_choose">Setup the Platys middleware to run in one of the following modes.</string>
-    <string name="dropbox">Dropbox</string>
-    <string name="platys_server">Platys Server</string>
-    <string name="dropbox_mode_desc">Dropbox mode requires you to set up a Platys reasoner on a computer with Dropbox access.</string>
-    <string name="server_mode_desc">Choose this mode if you are participating in Platys evaluation. You must submit a consent form before choosing this mode.</string>
+    <string name="activity_server_mode_chooser_dropbox_app_folder">Dropbox App Folder</string>
+    <string name="activity_server_mode_chooser_dropbox_sharable_folder">Dropbox Sharable Folder</string>
+    <string name="activity_server_mode_chooser_dropbox_app_folder_mode_desc">Dropbox app folder mode 
+        stores all your information in your private dropbox folder. The app folder cannot be shared. 
+        Thus, this mode requires that you set up the Platys reasoner manually on a machine with 
+        Dropbox access.</string>
+    <string name="activity_server_mode_chooser_dropbox_sharable_folder_mode_desc">Dropbox app folder mode 
+        stores all your information in your private dropbox folder. The app folder can be shared.
+        Choose this mode if you are participating in Platys evaluation and share the folder with 
+        pmuruka@ncsu.edu. You must submit a consent form before choosing this mode.</string>
     <string name="next">Next</string>
     <string name="proceed">Proceed</string>
     <string name="add_place_label">Add Place Label</string>
@@ -36,7 +42,8 @@
     <string name="sensors">Sensors</string>
     <string name="apps">Apps</string>
     <string name="PlacesFragment_add_place_alert_title">Add Place</string>
-    <string name="PlacesFragment_add_place_alert_message">A place label could describe a spatial or social aspect, user activity, or emotion associated with the place.</string>
+    <string name="PlacesFragment_add_place_alert_message">A place label could describe a spatial or 
+        social aspect, user activity, or emotion associated with the place.</string>
     <string name="place_label_description">Enter a new place label.</string>
     <string name="title_activity_dbx_mode_chooser">DbxModeChooserActivity</string>
     <string name="hello_world">Hello world!</string>

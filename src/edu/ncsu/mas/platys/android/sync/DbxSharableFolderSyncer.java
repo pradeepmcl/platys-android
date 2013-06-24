@@ -1,5 +1,5 @@
 package edu.ncsu.mas.platys.android.sync;
 
-public class DbxSyncer {
+public class DbxSharableFolderSyncer {
 
 }

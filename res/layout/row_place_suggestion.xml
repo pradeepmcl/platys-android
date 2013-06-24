@@ -14,7 +14,7 @@
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@string/cancel"
         android:padding="6dp"
-        android:src="@drawable/ic_dark_navigation_cancel" />
+        android:src="@drawable/ic_navigation_cancel" />
 
     <View
         android:id="@+id/vDividerCancelSuggestionPlaceSuggestionRow"
@@ -36,7 +36,7 @@
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@string/accept"
         android:padding="6dp"
-        android:src="@drawable/ic_dark_navigation_accept" />
+        android:src="@drawable/ic_navigation_accept" />
 
     <View
         android:id="@+id/vDividerAcceptSuggestionPlaceSuggestionRow"
