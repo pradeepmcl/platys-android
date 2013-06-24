@@ -19,7 +19,8 @@ public class PlatysReceiver extends BroadcastReceiver {
   public static enum PlatysTask {
     PLATYS_TASK_SENSE, 
     PLATYS_TASK_SYNC, 
-    PLATYS_TASK_SAVE_LABELS;
+    PLATYS_TASK_SAVE_LABELS,
+    PLATYS_CHECK_SOFTWARE_UPDATES;
   }
   
   // Sent with the PLATYS_TASK_SAVE_LABELS extra.

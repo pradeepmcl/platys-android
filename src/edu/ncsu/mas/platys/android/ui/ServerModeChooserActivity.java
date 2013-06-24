@@ -205,6 +205,25 @@ public class ServerModeChooserActivity extends Activity {
     return mPreferences.getString(PREFS_SERVER_USER_NAME, "");
   }
 
+  public static AndroidAuthSession getDbxSession(Context context) {
+    AppKeyPair appKeys = new AppKeyPair(SyncConstants.getDbxappkey(),
+        SyncConstants.getDbxappsecret());
+    
+    SharedPreferences mPreferences = context.getSharedPreferences(PLATYS_SERVER_PREFS,
+        Context.MODE_PRIVATE);
+    String accessKey = mPreferences.getString(PREFS_DBX_ACCESS_KEY_NAME, "");
+    String accessSecret = mPreferences.getString(PREFS_DBX_ACCESS_KEY_SECRET, "");
+    String accessTypeStr = mPreferences.getString(PREFS_DBX_ACCESS_TYPE, "");
+    
+    if (accessKey.length() == 0 || accessSecret.length() == 0 || accessTypeStr.length() == 0) {
+      throw new IllegalStateException("One of the cached values is empty (" + accessKey.length()
+          + ", " + accessSecret.length() + ", " + accessTypeStr.length() + ")");
+    }
+
+    return (new AndroidAuthSession(appKeys, AccessType.valueOf(accessTypeStr), new AccessTokenPair(
+        accessKey, accessSecret)));
+  }
+  
   public static AccessTokenPair getDbxAccessTokenPair(Context context) {
     SharedPreferences mPreferences = context.getSharedPreferences(PLATYS_SERVER_PREFS,
         Context.MODE_PRIVATE);
