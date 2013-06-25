@@ -1,7 +1,9 @@
 package edu.ncsu.mas.platys.android;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import android.app.Service;
 import android.content.Context;
@@ -19,6 +21,7 @@ import edu.ncsu.mas.platys.android.labels.PlaceLabelSaver;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.android.sensor.SensorEnum;
 import edu.ncsu.mas.platys.android.sensor.SensorPoller;
+import edu.ncsu.mas.platys.android.software.SoftwareUpdater;
 import edu.ncsu.mas.platys.android.sync.DbxCoreApiSyncer;
 
 public class PlatysService extends Service {
@@ -27,20 +30,15 @@ public class PlatysService extends Service {
 
   private static final String LOCK_NAME_STATIC = "edu.ncsu.mas.platys.android.PlatysService";
 
-  public static final int PLATYS_MSG_SENSE_FINISHED = 0;
-  public static final int PLATYS_MSG_SYNC_FINISHED = 1;
-  public static final int PLATYS_MSG_SAVE_LABELS_FINISHED = 2;
-
   private static volatile PowerManager.WakeLock lockStatic = null;
 
   private Handler mServiceHandler = null;
   private SensorDbHelper mSensorDbHelper = null;
 
-  private Thread runningSequentialThread = null;
+  private Thread runningSequentialTaskThread = null;
   private final List<Intent> pendingSequentialTaskIntents = new LinkedList<Intent>();
+  private final Map<PlatysTask, Thread> runningParallelTasksMap = new HashMap<PlatysTask, Thread>();
   
-  private final List<Intent> pendingParallelTaskIntents = new LinkedList<Intent>();
-
   synchronized private static PowerManager.WakeLock getLock(Context context) {
     if (lockStatic == null) {
       PowerManager mgr = (PowerManager) context.getApplicationContext().getSystemService(
@@ -67,7 +65,7 @@ public class PlatysService extends Service {
 
   @Override
   public IBinder onBind(Intent intent) {
-    // No binding required.
+    // No binding required yet.
     return null;
   }
 
@@ -75,90 +73,138 @@ public class PlatysService extends Service {
   public int onStartCommand(Intent intent, int flags, int startId) {
     if (intent != null) {
       Log.i(TAG, "Starting PlatysSerice for action: " + intent.getAction());
-      pendingSequentialTaskIntents.add(intent);
-      runAPendingTask();
+      startTask(intent);
     }
 
     return START_STICKY;
   }
+  
+  private void startTask(Intent intent) {
+    PlatysReceiver.PlatysTask platysTask = (PlatysTask) intent
+        .getSerializableExtra(PlatysReceiver.EXTRA_TASK);
+    
+    switch(platysTask) {
+    case PLATYS_CHECK_SOFTWARE_UPDATES:
+      startTaskInParallel(platysTask, intent);
+      break;
+    case PLATYS_TASK_SAVE_LABELS:
+      startTaskInSequence(platysTask, intent);
+      break;
+    case PLATYS_TASK_SENSE:
+      startTaskInSequence(platysTask, intent);
+      break;
+    case PLATYS_TASK_SYNC:
+      startTaskInSequence(platysTask, intent);
+      break;
+    default:
+      break;
+    }
+  }
+  
+  private void startTaskInParallel(PlatysTask platysTask, Intent intent) {
+    PowerManager.WakeLock lock = getLock(this.getApplicationContext());
+    if (!lock.isHeld()) { // ( && flags & START_FLAG_REDELIVERY) != 0
+      lock.acquire();
+      Log.i(TAG, "Acquired lock");
+    }
 
-  private void runAPendingTask() {
-    if (runningSequentialThread == null) {
-      if (pendingSequentialTaskIntents.isEmpty()) {
-        Log.i(TAG, "No more tasks to run. Releasing the lock and stopping the service.");
-        PowerManager.WakeLock lock = getLock(getApplicationContext());
-        if (lock.isHeld()) {
-          lock.release();
-        }
+    switch (platysTask) {
+    case PLATYS_CHECK_SOFTWARE_UPDATES:
+      Log.i(TAG, "Perform Platys software update action.");
+      runningParallelTasksMap.put(platysTask, new Thread(new SoftwareUpdater(
+          getApplicationContext(), mServiceHandler)));
+      runningParallelTasksMap.get(platysTask).start();
+      break;
+      
+    default: // This should never happen
+      break;
+    }
+  }
+  
+  private void startTaskInSequence(PlatysTask platysTask, Intent intent) {
+    if (runningSequentialTaskThread == null) {
+      PowerManager.WakeLock lock = getLock(this.getApplicationContext());
+      if (!lock.isHeld()) { // ( && flags & START_FLAG_REDELIVERY) != 0
+        lock.acquire();
+        Log.i(TAG, "Acquired lock");
+      }
 
-        stopSelf();
+      if (mSensorDbHelper == null || !mSensorDbHelper.isOpen()) {
+        mSensorDbHelper = OpenHelperManager
+            .getHelper(getApplicationContext(), SensorDbHelper.class);
+      }
 
-      } else {
-        Log.i(TAG, "Running next task in the queue.");
-        PowerManager.WakeLock lock = getLock(this.getApplicationContext());
-        if (!lock.isHeld()) { // ( && flags & START_FLAG_REDELIVERY) != 0
-          lock.acquire();
-        }
+      switch (platysTask) {
+      case PLATYS_TASK_SAVE_LABELS:
+        Log.i(TAG, "Perform Platys save labels action.");
+        runningSequentialTaskThread = new Thread(new PlaceLabelSaver(mServiceHandler,
+            mSensorDbHelper, intent));
+        break;
 
-        if (mSensorDbHelper == null || !mSensorDbHelper.isOpen()) {
-          mSensorDbHelper = OpenHelperManager.getHelper(getApplicationContext(),
-              SensorDbHelper.class);
-        }
+      case PLATYS_TASK_SENSE:
+        Log.i(TAG, "Perform Platys sense action.");
+        runningSequentialTaskThread = new SensorPoller(getApplicationContext(), mServiceHandler,
+            mSensorDbHelper, SensorEnum.values());
+        runningSequentialTaskThread.start();
+        break;
 
-        Intent pendingTaskIntent = pendingSequentialTaskIntents.remove(0);
-        PlatysReceiver.PlatysTask platysTask = (PlatysTask) pendingTaskIntent
-            .getSerializableExtra(PlatysReceiver.EXTRA_TASK);
+      case PLATYS_TASK_SYNC:
+        Log.i(TAG, "Perform Platys sync action.");
+        runningSequentialTaskThread = new Thread(new DbxCoreApiSyncer(getApplicationContext(),
+            mServiceHandler, OpenHelperManager.getHelper(getApplicationContext(),
+                SensorDbHelper.class)));
+        break;
 
-        switch (platysTask) {
-        case PLATYS_TASK_SENSE:
-          Log.i(TAG, "Perform Platys sense action.");
-          runningSequentialThread = new SensorPoller(getApplicationContext(), mServiceHandler,
-              mSensorDbHelper, SensorEnum.values());
-          runningSequentialThread.start();
-          break;
-        case PLATYS_TASK_SYNC:
-          Log.i(TAG, "Perform Platys sync action.");
-          runningSequentialThread = new Thread(new DbxCoreApiSyncer(getApplicationContext(), mServiceHandler,
-              OpenHelperManager.getHelper(getApplicationContext(), SensorDbHelper.class)));
-          runningSequentialThread.start();
-          break;
-        case PLATYS_TASK_SAVE_LABELS:
-          Log.i(TAG, "Perform Platys save labels action.");
-          runningSequentialThread = new Thread(new PlaceLabelSaver(mServiceHandler, mSensorDbHelper,
-              pendingTaskIntent));
-          runningSequentialThread.start();
-          break;
-        default:
-          break;
-        }
+      default: // This should never happen
+        break;
       }
 
     } else {
-      Log.i(TAG, "Waiting for running thread to finish.");
-      // Do nothing. Wait for running thread to finish.
+      pendingSequentialTaskIntents.add(intent);
     }
-  }
-
+  }  
+  
   private final class PlatysServiceHandler extends Handler {
     @Override
     public void handleMessage(Message msg) {
       Log.i(TAG, "Received message " + msg.arg1);
-
-      if (msg.what == PlatysService.PLATYS_MSG_SENSE_FINISHED) {
+      
+      PlatysTask msgFromTask = PlatysTask.values()[msg.what];
+      switch (msgFromTask) {
+      case PLATYS_CHECK_SOFTWARE_UPDATES:
+        Log.i(TAG, "Software update finished.");
+        runningParallelTasksMap.remove(msgFromTask);
+        break;
+        
+      case PLATYS_TASK_SAVE_LABELS:
+        Log.i(TAG, "LabelSaver finished.");
+        runningSequentialTaskThread = null;
+        break;
+        
+      case PLATYS_TASK_SENSE:
         Log.i(TAG, "SensorPoller finished.");
-        runningSequentialThread = null;
-
-      } else if (msg.what == PlatysService.PLATYS_MSG_SYNC_FINISHED) {
+        runningSequentialTaskThread = null;
+        break;
+        
+      case PLATYS_TASK_SYNC:
         Log.i(TAG, "SyncHandler finished.");
         OpenHelperManager.releaseHelper();
-        runningSequentialThread = null;
-
-      } else if (msg.what == PlatysService.PLATYS_MSG_SAVE_LABELS_FINISHED) {
-        Log.i(TAG, "LabelSaver finished.");
-        runningSequentialThread = null;
+        runningSequentialTaskThread = null;
+        break;
+      default:
+        break;
       }
-
-      runAPendingTask();
+      
+      if (!pendingSequentialTaskIntents.isEmpty()) {
+        startTask(pendingSequentialTaskIntents.remove(0));
+      } else {
+        if (runningSequentialTaskThread != null || !runningParallelTasksMap.isEmpty()) {
+          // Wait for running tasks to finish.
+          Log.i(TAG, "Waiting for running tasks to finish");
+        } else {
+          PlatysService.this.stopSelf();
+        }
+      }
     }
   }
 
@@ -168,6 +214,7 @@ public class PlatysService extends Service {
     OpenHelperManager.releaseHelper();
     PowerManager.WakeLock lock = getLock(getApplicationContext());
     if (lock.isHeld()) {
+      Log.i(TAG, "Releasing lock");
       lock.release();
     }
   }

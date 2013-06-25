@@ -12,7 +12,7 @@ import android.util.Log;
 import com.j256.ormlite.dao.Dao;
 
 import edu.ncsu.mas.platys.android.PlatysReceiver;
-import edu.ncsu.mas.platys.android.PlatysService;
+import edu.ncsu.mas.platys.android.PlatysReceiver.PlatysTask;
 import edu.ncsu.mas.platys.android.sensor.Sensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
@@ -47,7 +47,7 @@ public class PlaceLabelSaver implements Runnable {
           .getStringArrayListExtra(PlatysReceiver.EXTRA_LABELS_LIST);
       @SuppressWarnings("unchecked")
       final ArrayList<LabelType> labelTypeList = (ArrayList<LabelType>) mDetailsIntent
-      .getSerializableExtra(PlatysReceiver.EXTRA_LABEL_TYPES_LIST);
+          .getSerializableExtra(PlatysReceiver.EXTRA_LABEL_TYPES_LIST);
 
       final Dao<SensorData, ?> sensorDao = mSensorDbHelper
           .getDao(PlatysSensorEnum.PLACE_LABEL_SENSOR.getDataClass());
@@ -74,8 +74,8 @@ public class PlaceLabelSaver implements Runnable {
       result = Sensor.SENSING_FAILED;
       Log.e(TAG, "Unknown error", e);
     } finally {
-      Message msgToService = mServiceHandler
-          .obtainMessage(PlatysService.PLATYS_MSG_SAVE_LABELS_FINISHED);
+      Message msgToService = mServiceHandler.obtainMessage(PlatysTask.PLATYS_TASK_SAVE_LABELS
+          .ordinal());
       msgToService.arg1 = result;
       msgToService.sendToTarget();
     }

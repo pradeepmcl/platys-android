@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.Toast;
+import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.R;
 import edu.ncsu.mas.platys.android.ui.adapter.PlaceSuggestionArrayAdapter.SuggestionClickListener;
 import edu.ncsu.mas.platys.android.ui.fragment.AppsFragment;
@@ -47,6 +48,14 @@ public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
     if (mUsername.length() != 0 && mActionBar == null) {
       setupTabs();
     }
+    
+    Intent platysCheckUpdatesIntent = new Intent(this, PlatysReceiver.class);
+    platysCheckUpdatesIntent.setAction(PlatysReceiver.ACTION_ONE_TIME);
+
+    platysCheckUpdatesIntent.putExtra(PlatysReceiver.EXTRA_TASK,
+        PlatysReceiver.PlatysTask.PLATYS_CHECK_SOFTWARE_UPDATES);
+
+    sendBroadcast(platysCheckUpdatesIntent);
   }
 
   @Override

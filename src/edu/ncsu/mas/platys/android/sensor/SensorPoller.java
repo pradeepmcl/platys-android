@@ -10,7 +10,7 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 
-import edu.ncsu.mas.platys.android.PlatysService;
+import edu.ncsu.mas.platys.android.PlatysReceiver.PlatysTask;
 import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor;
 import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor;
 
@@ -113,8 +113,7 @@ public class SensorPoller extends HandlerThread {
   }
 
   protected void onPostExecute() {
-    Message msgToService = mServiceHandler.obtainMessage();
-    msgToService.what = PlatysService.PLATYS_MSG_SENSE_FINISHED;
+    Message msgToService = mServiceHandler.obtainMessage(PlatysTask.PLATYS_TASK_SENSE.ordinal());
     msgToService.arg1 = Sensor.SENSING_SUCCEEDED;
     msgToService.sendToTarget();
   }

@@ -15,7 +15,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import edu.ncsu.mas.platys.android.PlatysService;
+import edu.ncsu.mas.platys.android.PlatysReceiver.PlatysTask;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity;
 
@@ -68,7 +68,7 @@ public class DbxCoreApiSyncer implements Runnable {
         }
       }
 
-      Message msgToService = mServiceHandler.obtainMessage(PlatysService.PLATYS_MSG_SYNC_FINISHED);
+      Message msgToService = mServiceHandler.obtainMessage(PlatysTask.PLATYS_TASK_SYNC.ordinal());
       msgToService.arg1 = syncSuccess;
       msgToService.sendToTarget();
     }
