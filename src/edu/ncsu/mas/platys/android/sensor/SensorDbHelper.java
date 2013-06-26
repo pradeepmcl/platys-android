@@ -55,7 +55,7 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
     if (instanceInfoDao.countOf() == 0) {
       SensorDbInstanceInfo instanceInfo = new SensorDbInstanceInfo();
       instanceInfo.setCreationTime(System.currentTimeMillis());
-      instanceInfo.setHostMacAddr(0L); // TODO
+      instanceInfo.setHostMacAddr(100); // TODO
       instanceInfoDao.create(instanceInfo);
     }
   }
