@@ -17,18 +17,15 @@ public class PlatysReceiver extends BroadcastReceiver {
   public static final String EXTRA_TASK = "platys.intent.extra.TASK";
 
   public static enum PlatysTask {
-    PLATYS_TASK_SENSE, 
-    PLATYS_TASK_SYNC, 
-    PLATYS_TASK_SAVE_LABELS,
-    PLATYS_CHECK_SOFTWARE_UPDATES;
+    PLATYS_TASK_SENSE, PLATYS_TASK_SYNC, PLATYS_TASK_SAVE_LABELS, PLATYS_CHECK_SOFTWARE_UPDATES;
   }
-  
+
   // Sent with the PLATYS_TASK_SAVE_LABELS extra.
   public static final String EXTRA_LABELING_START_TIME = "platys.intent.extra.LABELING_START_TIME";
   public static final String EXTRA_LABELING_END_TIME = "platys.intent.extra.LABELING_END_TIME";
   public static final String EXTRA_LABELS_LIST = "platys.intent.extra.LABELS_LIST";
   public static final String EXTRA_LABEL_TYPES_LIST = "platys.intent.extra.LABEL_TYPES_LIST";
-  
+
   @Override
   public void onReceive(Context context, Intent intent) {
     String action = intent.getAction();
@@ -52,17 +49,21 @@ public class PlatysReceiver extends BroadcastReceiver {
     long delayInMillis = 0;
     switch (task) {
     case PLATYS_TASK_SENSE:
-      delayInMillis = 10 * 60 * 1000; // 10 minutes.
+      delayInMillis = 3 * 60 * 1000; // 3 minutes.
       break;
     case PLATYS_TASK_SYNC:
       delayInMillis = 60 * 60 * 1000; // 60 minutes.
+      break;
+    case PLATYS_CHECK_SOFTWARE_UPDATES:
+      delayInMillis = 2 * 60 * 60 * 1000; // 2 hours
       break;
     default:
       return;
     }
 
+    Log.i(TAG, "Scheduling alarm after " + delayInMillis);
     AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + delayInMillis,
-        PendingIntent.getBroadcast(context, 0, intentToSchedule, 0));
+        PendingIntent.getBroadcast(context, 0, intentToSchedule, PendingIntent.FLAG_UPDATE_CURRENT));
   }
 }

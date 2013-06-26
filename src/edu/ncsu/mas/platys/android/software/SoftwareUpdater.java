@@ -49,7 +49,6 @@ public class SoftwareUpdater implements Runnable {
 
       long serverLastUpdateTime = getLastModifiedTime();
 
-      Log.i(TAG, appInstallTime + ", " + serverLastUpdateTime + ", " + System.currentTimeMillis());
       if (appInstallTime < serverLastUpdateTime) {
         Intent notifIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(SOFTWARE_UPDATE_URL));
         PendingIntent pNotifIntent = PendingIntent.getActivity(mContext, 0, notifIntent, 0);

@@ -76,7 +76,7 @@ public class PlatysService extends Service {
       startTask(intent);
     }
 
-    return START_STICKY;
+    return START_REDELIVER_INTENT;
   }
   
   private void startTask(Intent intent) {
@@ -139,6 +139,7 @@ public class PlatysService extends Service {
         Log.i(TAG, "Perform Platys save labels action.");
         runningSequentialTaskThread = new Thread(new PlaceLabelSaver(mServiceHandler,
             mSensorDbHelper, intent));
+        runningSequentialTaskThread.start();
         break;
 
       case PLATYS_TASK_SENSE:
@@ -153,6 +154,7 @@ public class PlatysService extends Service {
         runningSequentialTaskThread = new Thread(new DbxCoreApiSyncer(getApplicationContext(),
             mServiceHandler, OpenHelperManager.getHelper(getApplicationContext(),
                 SensorDbHelper.class)));
+        runningSequentialTaskThread.start();
         break;
 
       default: // This should never happen
