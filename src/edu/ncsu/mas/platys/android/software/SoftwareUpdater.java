@@ -103,7 +103,7 @@ public class SoftwareUpdater implements Runnable {
   private void scheduleNext() {
     Intent intentToSchedule = new Intent(mContext.getApplicationContext(), PlatysReceiver.class);
     intentToSchedule.setAction(PlatysReceiver.ACTION_SAVE_LABELS);
-    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, 1 * 60 * 60 * 1000);
+    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, 4 * 60 * 60 * 1000);
   }
 
 }

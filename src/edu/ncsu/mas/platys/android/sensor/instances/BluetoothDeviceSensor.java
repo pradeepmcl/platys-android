@@ -103,8 +103,8 @@ public class BluetoothDeviceSensor implements Sensor {
         Log.e(TAG, "Database operation failed.", e);
       }
 
-      mMsgToPoller.arg2 = result;
-      mMsgToPoller.sendToTarget();
+      /*mMsgToPoller.arg2 = result;
+      mMsgToPoller.sendToTarget();*/
     }
   };
 

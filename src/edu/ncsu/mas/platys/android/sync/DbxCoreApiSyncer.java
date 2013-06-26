@@ -85,7 +85,7 @@ public class DbxCoreApiSyncer implements Runnable {
   private void scheduleNext() {
     Intent intentToSchedule = new Intent(mContext.getApplicationContext(), PlatysReceiver.class);
     intentToSchedule.setAction(PlatysReceiver.ACTION_SYNC);
-    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, 30 * 60 * 1000);
+    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, 60 * 60 * 1000);
   }
 
 }

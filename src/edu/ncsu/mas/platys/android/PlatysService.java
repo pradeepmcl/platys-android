@@ -27,6 +27,10 @@ public class PlatysService extends Service {
 
   private static final String TAG = PlatysService.class.getSimpleName();
 
+  private static boolean senseInProgress = false;
+  private static boolean syncInProgress = false;
+  private static boolean swUpdateInProgress = false;
+  
   public enum PlatysTask {
     PLATYS_TASK_SENSE(PlatysReceiver.ACTION_SENSE),
     PLATYS_TASK_SYNC(PlatysReceiver.ACTION_SYNC),
@@ -113,16 +117,25 @@ public class PlatysService extends Service {
 
     switch (platysTask) {
     case PLATYS_CHECK_SOFTWARE_UPDATES:
-      startTaskInParallel(platysTask, intent);
+      if (!swUpdateInProgress) {
+        swUpdateInProgress = true;
+        startTaskInParallel(platysTask, intent);
+      }
       break;
     case PLATYS_TASK_SAVE_LABELS:
       startTaskInSequence(platysTask, intent);
       break;
     case PLATYS_TASK_SENSE:
-      startTaskInSequence(platysTask, intent);
+      if (!senseInProgress) {
+        senseInProgress = true;
+        startTaskInSequence(platysTask, intent);
+      }
       break;
     case PLATYS_TASK_SYNC:
-      startTaskInSequence(platysTask, intent);
+      if (!syncInProgress) {
+        syncInProgress = true;
+        startTaskInSequence(platysTask, intent);
+      }
       break;
     default:
       break;
@@ -204,6 +217,7 @@ public class PlatysService extends Service {
       case PLATYS_CHECK_SOFTWARE_UPDATES:
         Log.i(TAG, "Software update finished.");
         runningParallelTasksMap.remove(msgFromTask);
+        swUpdateInProgress = false;
         break;
 
       case PLATYS_TASK_SAVE_LABELS:
@@ -214,19 +228,24 @@ public class PlatysService extends Service {
       case PLATYS_TASK_SENSE:
         Log.i(TAG, "SensorPoller finished.");
         runningSequentialTaskThread = null;
+        senseInProgress = false;
         break;
 
       case PLATYS_TASK_SYNC:
         Log.i(TAG, "SyncHandler finished.");
         OpenHelperManager.releaseHelper();
         runningSequentialTaskThread = null;
+        syncInProgress = false;
         break;
       default:
         break;
       }
 
       if (!pendingSequentialTaskIntents.isEmpty()) {
-        startTask(pendingSequentialTaskIntents.remove(0));
+        Intent nextIntent = pendingSequentialTaskIntents.remove(0);
+        String taskStr = nextIntent.getAction();
+        PlatysTask platysTask = PlatysTask.fromString(taskStr);
+        startTaskInSequence(platysTask, nextIntent);
       } else {
         if (runningSequentialTaskThread != null || !runningParallelTasksMap.isEmpty()) {
           // Wait for running tasks to finish.
@@ -243,6 +262,11 @@ public class PlatysService extends Service {
     super.onDestroy();
     OpenHelperManager.releaseHelper();
     PowerManager.WakeLock lock = getLock(getApplicationContext());
+    
+    senseInProgress = false;
+    syncInProgress = false;
+    swUpdateInProgress = false;
+    
     if (lock.isHeld()) {
       Log.i(TAG, "Releasing lock");
       lock.release();

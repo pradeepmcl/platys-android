@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import edu.ncsu.mas.platys.android.PlatysReceiver;
@@ -23,7 +22,7 @@ public class SensorPoller extends HandlerThread {
   private static final String HANDLER_THREAD_NAME = SensorPoller.class.getName();
 
   private final Context mContext;
-  private final ExecutorService mThreadPool;
+  // private final ExecutorService mThreadPool;
 
   private final Sensor[] mSensorList;
   private final Boolean[] mSensorFinishedList;
@@ -66,7 +65,7 @@ public class SensorPoller extends HandlerThread {
       }
     }
 
-    mThreadPool = Executors.newFixedThreadPool(mSensorList.length);
+    // mThreadPool = Executors.newFixedThreadPool(mSensorList.length);
   }
 
   private final Handler mSensorResponseHandler = new Handler() {
@@ -106,13 +105,13 @@ public class SensorPoller extends HandlerThread {
     mSensorResponseHandler.postDelayed(mOnSensorTimeout, getTimeOutValue());
 
     for (final Sensor sensor : mSensorList) {
-      mThreadPool.submit(new Runnable() {
+      sensor.startSensor();
+      /*mThreadPool.submit(new Runnable() {
         @Override
         public void run() {
-          Looper.prepare();
           sensor.startSensor();
         }
-      });
+      });*/
     }
   }
 
@@ -146,7 +145,8 @@ public class SensorPoller extends HandlerThread {
         longestTimeoutValue = sensor.getTimeoutValue();
       }
     }
-    return longestTimeoutValue;
+    // return longestTimeoutValue;
+    return 60000; // 1 min. for testing.
   }
 
 }

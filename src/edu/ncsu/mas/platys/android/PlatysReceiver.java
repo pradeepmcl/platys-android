@@ -47,7 +47,7 @@ public class PlatysReceiver extends BroadcastReceiver {
     context.sendBroadcast(platysSenseIntent);
 
     // Start syncing
-    /*Intent platysSyncingIntent = new Intent(context.getApplicationContext(), PlatysReceiver.class);
+    Intent platysSyncingIntent = new Intent(context.getApplicationContext(), PlatysReceiver.class);
     platysSyncingIntent.setAction(PlatysReceiver.ACTION_SYNC);
     context.sendBroadcast(platysSyncingIntent);
 
@@ -55,7 +55,7 @@ public class PlatysReceiver extends BroadcastReceiver {
     Intent platysCheckUpdatesIntent = new Intent(context.getApplicationContext(),
         PlatysReceiver.class);
     platysCheckUpdatesIntent.setAction(PlatysReceiver.ACTION_UPDATE_SW);
-    context.sendBroadcast(platysCheckUpdatesIntent);*/
+    context.sendBroadcast(platysCheckUpdatesIntent);
   }
 
 }
