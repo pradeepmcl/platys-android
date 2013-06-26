@@ -36,17 +36,17 @@ public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
   }
-  
+
   @Override
   protected void onStart() {
     super.onStart();
-    
+
     mUsername = ServerModeChooserActivity.getUsername(this.getApplicationContext());
     if (mUsername.length() == 0) {
       startActivity(new Intent(this, ServerModeChooserActivity.class));
     } else if (mActionBar == null) {
       setupTabs();
-      startBackgroundTasks();
+      PlatysReceiver.startBackgroundTasks(this);
     }
   }
 
@@ -70,7 +70,7 @@ public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
     mActionBar.setSubtitle(mUsername);
 
     mActionBar.removeAllTabs();
-    
+
     mActionBar
         .addTab(mActionBar
             .newTab()
@@ -86,30 +86,6 @@ public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
 
     mActionBar.addTab(mActionBar.newTab().setText(R.string.apps)
         .setTabListener(new TabListener<AppsFragment>(this, APPS_TAB_TAG, AppsFragment.class)));
-  }
-  
-  private void startBackgroundTasks() {
-    // Start sensing
-    Intent platysSenseIntent = new Intent(getApplicationContext(), PlatysReceiver.class);
-    platysSenseIntent.setAction(PlatysReceiver.ACTION_PERIODIC);
-    platysSenseIntent.putExtra(PlatysReceiver.EXTRA_TASK,
-        PlatysReceiver.PlatysTask.PLATYS_TASK_SENSE);
-    sendBroadcast(platysSenseIntent);
-
-    /*
-    // Start syncing
-    Intent platysSyncingIntent = new Intent(getApplicationContext(), PlatysReceiver.class);
-    platysSyncingIntent.setAction(PlatysReceiver.ACTION_PERIODIC);
-    platysSyncingIntent.putExtra(PlatysReceiver.EXTRA_TASK,
-        PlatysReceiver.PlatysTask.PLATYS_TASK_SYNC);
-    sendBroadcast(platysSyncingIntent);
-
-    // Start update checking
-    Intent platysCheckUpdatesIntent = new Intent(getApplicationContext(), PlatysReceiver.class);
-    platysCheckUpdatesIntent.setAction(PlatysReceiver.ACTION_PERIODIC);
-    platysCheckUpdatesIntent.putExtra(PlatysReceiver.EXTRA_TASK,
-        PlatysReceiver.PlatysTask.PLATYS_CHECK_SOFTWARE_UPDATES);
-    sendBroadcast(platysCheckUpdatesIntent);*/
   }
 
   public static class TabListener<T extends Fragment> implements ActionBar.TabListener {

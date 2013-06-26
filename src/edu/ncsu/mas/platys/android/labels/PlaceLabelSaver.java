@@ -12,7 +12,7 @@ import android.util.Log;
 import com.j256.ormlite.dao.Dao;
 
 import edu.ncsu.mas.platys.android.PlatysReceiver;
-import edu.ncsu.mas.platys.android.PlatysReceiver.PlatysTask;
+import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
 import edu.ncsu.mas.platys.android.sensor.Sensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;

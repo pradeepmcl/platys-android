@@ -5,20 +5,15 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 public class PlatysReceiver extends BroadcastReceiver {
 
-  private static final String TAG = PlatysReceiver.class.getSimpleName();
+  // private static final String TAG = PlatysReceiver.class.getSimpleName();
 
-  public static final String ACTION_PERIODIC = "platys.intent.action.PERIODIC";
-  public static final String ACTION_ONE_TIME = "platys.intent.action.ONE_TIME";
-
-  public static final String EXTRA_TASK = "platys.intent.extra.TASK";
-
-  public static enum PlatysTask {
-    PLATYS_TASK_SENSE, PLATYS_TASK_SYNC, PLATYS_TASK_SAVE_LABELS, PLATYS_CHECK_SOFTWARE_UPDATES;
-  }
+  public static final String ACTION_SENSE = "platys.intent.action.SENSE";
+  public static final String ACTION_SYNC = "platys.intent.action.SYNC";
+  public static final String ACTION_SAVE_LABELS = "platys.intent.action.SAVE_LABELS";
+  public static final String ACTION_UPDATE_SW = "platys.intent.action.UPDATE_SW";
 
   // Sent with the PLATYS_TASK_SAVE_LABELS extra.
   public static final String EXTRA_LABELING_START_TIME = "platys.intent.extra.LABELING_START_TIME";
@@ -29,41 +24,38 @@ public class PlatysReceiver extends BroadcastReceiver {
   @Override
   public void onReceive(Context context, Intent intent) {
     String action = intent.getAction();
-    Log.i(TAG, "Alarm received for " + action);
-
-    if (action.equals(ACTION_PERIODIC)) {
-      PlatysService.startWakefulAction(context, intent);
-      schedulePlatysAction(context, intent);
-    } else if (action.equals(ACTION_ONE_TIME)) {
+    if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
+      PlatysReceiver.startBackgroundTasks(context);
+    } else if (action.equals(ACTION_SENSE) || action.equals(ACTION_SYNC)
+        || action.equals(ACTION_SAVE_LABELS) || action.equals(ACTION_UPDATE_SW)) {
       PlatysService.startWakefulAction(context, intent);
     }
   }
 
-  private void schedulePlatysAction(Context context, Intent intent) {
-    PlatysTask task = (PlatysTask) intent.getSerializableExtra(EXTRA_TASK);
-
-    Intent intentToSchedule = new Intent(context, PlatysReceiver.class);
-    intentToSchedule.setAction(intent.getAction());
-    intentToSchedule.putExtra(EXTRA_TASK, task);
-
-    long delayInMillis = 0;
-    switch (task) {
-    case PLATYS_TASK_SENSE:
-      delayInMillis = 3 * 60 * 1000; // 3 minutes.
-      break;
-    case PLATYS_TASK_SYNC:
-      delayInMillis = 60 * 60 * 1000; // 60 minutes.
-      break;
-    case PLATYS_CHECK_SOFTWARE_UPDATES:
-      delayInMillis = 2 * 60 * 60 * 1000; // 2 hours
-      break;
-    default:
-      return;
-    }
-
-    Log.i(TAG, "Scheduling alarm after " + delayInMillis);
+  public static void schedulePlatysAction(Context context, Intent intentToSchedule,
+      long delayInMillis) {
     AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-    am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + delayInMillis,
-        PendingIntent.getBroadcast(context, 0, intentToSchedule, PendingIntent.FLAG_UPDATE_CURRENT));
+    am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + delayInMillis, PendingIntent
+        .getBroadcast(context.getApplicationContext(), 0, intentToSchedule,
+            PendingIntent.FLAG_UPDATE_CURRENT));
   }
+
+  public static void startBackgroundTasks(Context context) {
+    // Start sensing
+    Intent platysSenseIntent = new Intent(context.getApplicationContext(), PlatysReceiver.class);
+    platysSenseIntent.setAction(PlatysReceiver.ACTION_SENSE);
+    context.sendBroadcast(platysSenseIntent);
+
+    // Start syncing
+    /*Intent platysSyncingIntent = new Intent(context.getApplicationContext(), PlatysReceiver.class);
+    platysSyncingIntent.setAction(PlatysReceiver.ACTION_SYNC);
+    context.sendBroadcast(platysSyncingIntent);
+
+    // Start update checking
+    Intent platysCheckUpdatesIntent = new Intent(context.getApplicationContext(),
+        PlatysReceiver.class);
+    platysCheckUpdatesIntent.setAction(PlatysReceiver.ACTION_UPDATE_SW);
+    context.sendBroadcast(platysCheckUpdatesIntent);*/
+  }
+
 }

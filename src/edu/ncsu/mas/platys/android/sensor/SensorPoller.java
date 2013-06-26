@@ -5,13 +5,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-
-import edu.ncsu.mas.platys.android.PlatysReceiver.PlatysTask;
+import edu.ncsu.mas.platys.android.PlatysReceiver;
+import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
 import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor;
+import edu.ncsu.mas.platys.android.sensor.instances.GpsSensor;
 import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor;
 
 public class SensorPoller extends HandlerThread {
@@ -25,7 +28,7 @@ public class SensorPoller extends HandlerThread {
   private final Sensor[] mSensorList;
   private final Boolean[] mSensorFinishedList;
   private Runnable mOnSensorTimeout = null;
-  
+
   private final Handler mServiceHandler;
   private final SensorDbHelper mDbHelper;
 
@@ -52,6 +55,9 @@ public class SensorPoller extends HandlerThread {
       case BluetoothDeviceSensor:
         sensor = new BluetoothDeviceSensor(mContext, mSensorResponseHandler, mDbHelper, i);
         break;
+      case GpsSensor:
+        sensor = new GpsSensor(mContext, mSensorResponseHandler, mDbHelper, i);
+        break;
       }
 
       if (sensor != null) {
@@ -74,6 +80,7 @@ public class SensorPoller extends HandlerThread {
 
       if (!(Arrays.asList(mSensorFinishedList).contains(false))) {
         Log.i(TAG, "All sensors finished; halting the poller.");
+        mSensorResponseHandler.removeCallbacks(mOnSensorTimeout);
         quit();
       }
     }
@@ -87,6 +94,11 @@ public class SensorPoller extends HandlerThread {
       @Override
       public void run() {
         Log.i(TAG, "Some sensor must have timed out; halting the poller.");
+        for (int i = 0; i < mSensorList.length; i++) {
+          if (mSensorFinishedList[i] == false) {
+            mSensorList[i].stopSensor();
+          }
+        }
         quit();
       }
     };
@@ -97,6 +109,7 @@ public class SensorPoller extends HandlerThread {
       mThreadPool.submit(new Runnable() {
         @Override
         public void run() {
+          Looper.prepare();
           sensor.startSensor();
         }
       });
@@ -113,9 +126,17 @@ public class SensorPoller extends HandlerThread {
   }
 
   protected void onPostExecute() {
+    scheduleNext();
+
     Message msgToService = mServiceHandler.obtainMessage(PlatysTask.PLATYS_TASK_SENSE.ordinal());
     msgToService.arg1 = Sensor.SENSING_SUCCEEDED;
     msgToService.sendToTarget();
+  }
+
+  private void scheduleNext() {
+    Intent intentToSchedule = new Intent(mContext.getApplicationContext(), PlatysReceiver.class);
+    intentToSchedule.setAction(PlatysReceiver.ACTION_SENSE);
+    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, 5 * 60 * 1000);
   }
 
   private long getTimeOutValue() {

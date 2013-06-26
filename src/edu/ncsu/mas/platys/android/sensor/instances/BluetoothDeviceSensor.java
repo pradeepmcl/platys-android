@@ -30,7 +30,7 @@ public class BluetoothDeviceSensor implements Sensor {
   private final Message mMsgToPoller;
 
   private BluetoothDeviceFoundReceiver mBluetoothDeviceFoundReceiver = null;
-  
+
   private long mSensingStartTime;
 
   public BluetoothDeviceSensor(Context context, Handler handler, SensorDbHelper dbHelper,
@@ -49,6 +49,7 @@ public class BluetoothDeviceSensor implements Sensor {
     if (!mBluetoothAdapter.isEnabled()) {
       mMsgToPoller.arg2 = SENSOR_DISABLED;
       mMsgToPoller.sendToTarget();
+      return;
     }
 
     mBluetoothDeviceFoundReceiver = new BluetoothDeviceFoundReceiver();

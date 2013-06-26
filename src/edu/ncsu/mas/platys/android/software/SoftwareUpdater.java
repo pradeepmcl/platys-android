@@ -8,8 +8,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import edu.ncsu.mas.platys.android.PlatysReceiver.PlatysTask;
-import edu.ncsu.mas.platys.android.R;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -22,12 +20,14 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import edu.ncsu.mas.platys.android.PlatysReceiver;
+import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
+import edu.ncsu.mas.platys.android.R;
 
 public class SoftwareUpdater implements Runnable {
   private static final String TAG = "Platys" + SoftwareUpdater.class.getSimpleName();
 
-  public static final String SOFTWARE_UPDATE_URL = 
-      "http://platys.csc.ncsu.edu/platys/resources/PlatysAndroid.apk";
+  public static final String SOFTWARE_UPDATE_URL = "http://platys.csc.ncsu.edu/platys/resources/PlatysAndroid.apk";
 
   private final Context mContext;
   private final Handler mServiceHandler;
@@ -52,27 +52,27 @@ public class SoftwareUpdater implements Runnable {
       if (appInstallTime < serverLastUpdateTime) {
         Intent notifIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(SOFTWARE_UPDATE_URL));
         PendingIntent pNotifIntent = PendingIntent.getActivity(mContext, 0, notifIntent, 0);
-        
-        Notification notif = new Notification.Builder(mContext)
-            .setContentTitle("Platys")
+
+        Notification notif = new Notification.Builder(mContext).setContentTitle("Platys")
             .setContentText("A new version of the app is available.")
-            .setSmallIcon(R.drawable.ic_launcher_platys)
-            .setContentIntent(pNotifIntent)
+            .setSmallIcon(R.drawable.ic_launcher_platys).setContentIntent(pNotifIntent)
             .getNotification();
         notif.flags |= Notification.FLAG_AUTO_CANCEL;
-        
+
         NotificationManager notifMgr = (NotificationManager) mContext
             .getSystemService(Context.NOTIFICATION_SERVICE);
-        notifMgr.notify(0, notif); 
-        
+        notifMgr.notify(0, notif);
+
       } else {
         Log.i(TAG, "No updates available");
       }
     } catch (NameNotFoundException e) {
       Log.e(TAG, "Can't find the app! Something wrong", e);
     } finally {
-      Message msgToService = mServiceHandler.obtainMessage(PlatysTask.PLATYS_CHECK_SOFTWARE_UPDATES
-          .ordinal());
+      scheduleNext();
+
+      Message msgToService = mServiceHandler
+          .obtainMessage(PlatysTask.PLATYS_CHECK_SOFTWARE_UPDATES.ordinal());
       msgToService.arg1 = updateStatus;
       msgToService.sendToTarget();
     }
@@ -99,4 +99,11 @@ public class SoftwareUpdater implements Runnable {
 
     return lastModifiedTime;
   }
+
+  private void scheduleNext() {
+    Intent intentToSchedule = new Intent(mContext.getApplicationContext(), PlatysReceiver.class);
+    intentToSchedule.setAction(PlatysReceiver.ACTION_SAVE_LABELS);
+    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, 1 * 60 * 60 * 1000);
+  }
+
 }

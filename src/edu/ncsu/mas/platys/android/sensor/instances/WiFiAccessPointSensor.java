@@ -57,6 +57,7 @@ public class WiFiAccessPointSensor implements Sensor {
     if (!mWifiMgr.isWifiEnabled()) {
       mMsgToPoller.arg2 = SENSOR_DISABLED;
       mMsgToPoller.sendToTarget();
+      return;
     }
 
     mWifiAccessPointReceiver = new WifiAccessPointReceiver();

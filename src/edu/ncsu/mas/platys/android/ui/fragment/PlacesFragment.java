@@ -274,11 +274,9 @@ public class PlacesFragment extends Fragment {
       labelTypeList.add(label.getLabelType());
     }
 
-    Intent platysSaveLabelsIntent = new Intent(getActivity(), PlatysReceiver.class);
-    platysSaveLabelsIntent.setAction(PlatysReceiver.ACTION_ONE_TIME);
-
-    platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_TASK,
-        PlatysReceiver.PlatysTask.PLATYS_TASK_SAVE_LABELS);
+    Intent platysSaveLabelsIntent = new Intent(getActivity().getApplicationContext(),
+        PlatysReceiver.class);
+    platysSaveLabelsIntent.setAction(PlatysReceiver.ACTION_SAVE_LABELS);
     platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABELING_START_TIME, curTime);
     platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABELING_END_TIME, labelingTime);
     platysSaveLabelsIntent.putExtra(PlatysReceiver.EXTRA_LABELS_LIST, labelList);
@@ -288,21 +286,17 @@ public class PlacesFragment extends Fragment {
   }
 
   private void initiateSensing() {
-    Intent platysSenseIntent = new Intent(getActivity(), PlatysReceiver.class);
-    platysSenseIntent.setAction(PlatysReceiver.ACTION_ONE_TIME);
-
-    platysSenseIntent.putExtra(PlatysReceiver.EXTRA_TASK,
-        PlatysReceiver.PlatysTask.PLATYS_TASK_SENSE);
+    Intent platysSenseIntent = new Intent(getActivity().getApplicationContext(),
+        PlatysReceiver.class);
+    platysSenseIntent.setAction(PlatysReceiver.ACTION_SENSE);
 
     getActivity().sendBroadcast(platysSenseIntent);
   }
 
   private void initiateSyncing() {
-    Intent platysSenseIntent = new Intent(getActivity(), PlatysReceiver.class);
-    platysSenseIntent.setAction(PlatysReceiver.ACTION_ONE_TIME);
-
-    platysSenseIntent.putExtra(PlatysReceiver.EXTRA_TASK,
-        PlatysReceiver.PlatysTask.PLATYS_TASK_SYNC);
+    Intent platysSenseIntent = new Intent(getActivity().getApplicationContext(),
+        PlatysReceiver.class);
+    platysSenseIntent.setAction(PlatysReceiver.ACTION_SYNC);
 
     getActivity().sendBroadcast(platysSenseIntent);
   }

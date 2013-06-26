@@ -6,16 +6,19 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 
-import android.content.Context;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
-import edu.ncsu.mas.platys.android.PlatysReceiver.PlatysTask;
+import edu.ncsu.mas.platys.android.PlatysReceiver;
+import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity;
 
@@ -28,8 +31,7 @@ public class DbxCoreApiSyncer implements Runnable {
   private final Handler mServiceHandler;
   private final SensorDbHelper mSensorDbHelper;
 
-  public DbxCoreApiSyncer(Context context, Handler serviceHandler,
-      SensorDbHelper sensorDbHelper) {
+  public DbxCoreApiSyncer(Context context, Handler serviceHandler, SensorDbHelper sensorDbHelper) {
     Log.i(TAG, "Creating SyncHandler.");
     mContext = context;
     mServiceHandler = serviceHandler;
@@ -39,13 +41,13 @@ public class DbxCoreApiSyncer implements Runnable {
   @Override
   public void run() {
     int syncSuccess = 0;
+    final File sensorDbFile = mContext.getDatabasePath(mSensorDbHelper.getDatabaseName());
     InputStream sensorDbFileIs = null;
 
     try {
       DropboxAPI<AndroidAuthSession> dbxApi = new DropboxAPI<AndroidAuthSession>(
           ServerModeChooserActivity.getDbxSession(mContext));
       if (dbxApi.getSession().isLinked()) {
-        final File sensorDbFile = mContext.getDatabasePath(mSensorDbHelper.getDatabaseName());
         final String fileToUpload = SENSOR_SYNC_DIR_PATH + System.currentTimeMillis() + ".db";
         sensorDbFileIs = new FileInputStream(sensorDbFile);
         Entry newEntry = dbxApi.putFile(fileToUpload, sensorDbFileIs, sensorDbFile.length(), null,
@@ -68,10 +70,22 @@ public class DbxCoreApiSyncer implements Runnable {
         }
       }
 
+      if (syncSuccess == 1) {
+        sensorDbFile.delete();
+      }
+
+      scheduleNext();
+
       Message msgToService = mServiceHandler.obtainMessage(PlatysTask.PLATYS_TASK_SYNC.ordinal());
       msgToService.arg1 = syncSuccess;
       msgToService.sendToTarget();
     }
+  }
+
+  private void scheduleNext() {
+    Intent intentToSchedule = new Intent(mContext.getApplicationContext(), PlatysReceiver.class);
+    intentToSchedule.setAction(PlatysReceiver.ACTION_SYNC);
+    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, 30 * 60 * 1000);
   }
 
 }
