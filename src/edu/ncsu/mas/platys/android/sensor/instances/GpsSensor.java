@@ -95,6 +95,7 @@ public class GpsSensor implements PlatysSensor {
       gpsData.setLattitude(lastLoc.getLatitude());
       gpsData.setLongitude(lastLoc.getLongitude());
       gpsData.setAltitude(lastLoc.getAltitude());
+      gpsData.setAccuracy((double) lastLoc.getAccuracy());
 
       try {
         if (mGpsDao == null) {
@@ -119,6 +120,7 @@ public class GpsSensor implements PlatysSensor {
       gpsData.setLattitude(location.getLatitude());
       gpsData.setLongitude(location.getLongitude());
       gpsData.setAltitude(location.getAltitude());
+      gpsData.setAccuracy((double) location.getAccuracy());
 
       try {
         if (mGpsDao == null) {
