@@ -27,7 +27,9 @@ import edu.ncsu.mas.platys.android.R;
 public class SoftwareUpdater implements Runnable {
   private static final String TAG = "Platys" + SoftwareUpdater.class.getSimpleName();
 
-  public static final String SOFTWARE_UPDATE_URL = "http://platys.csc.ncsu.edu/platys/resources/PlatysAndroid.apk";
+  private static final String SOFTWARE_UPDATE_URL = "http://platys.csc.ncsu.edu/platys/resources/PlatysAndroid.apk";
+
+  private static final long CHECK_FREQUENCY = 4 * 60 * 60 * 1000;
 
   private final Context mContext;
   private final Handler mServiceHandler;
@@ -103,7 +105,7 @@ public class SoftwareUpdater implements Runnable {
   private void scheduleNext() {
     Intent intentToSchedule = new Intent(mContext.getApplicationContext(), PlatysReceiver.class);
     intentToSchedule.setAction(PlatysReceiver.ACTION_SAVE_LABELS);
-    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, 4 * 60 * 60 * 1000);
+    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, CHECK_FREQUENCY);
   }
 
 }

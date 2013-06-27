@@ -1,8 +1,6 @@
 package edu.ncsu.mas.platys.android.sensor;
 
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +10,8 @@ import android.os.Message;
 import android.util.Log;
 import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
+import edu.ncsu.mas.platys.android.sensor.PlatysSensor.SensorMsg;
+import edu.ncsu.mas.platys.android.sensor.instances.AccelerometerSensor;
 import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor;
 import edu.ncsu.mas.platys.android.sensor.instances.GpsSensor;
 import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor;
@@ -21,10 +21,13 @@ public class SensorPoller extends HandlerThread {
   private static final String TAG = "Platys" + SensorPoller.class.getSimpleName();
   private static final String HANDLER_THREAD_NAME = SensorPoller.class.getName();
 
+  private static final long SCAN_FREQUENCY = 5 * 60 * 1000; // 5 min.
+  private static final long DEFAULT_TIMEOUT = 2 * 60 * 1000; // 2 min.
+
   private final Context mContext;
   // private final ExecutorService mThreadPool;
 
-  private final Sensor[] mSensorList;
+  private final PlatysSensor[] mSensorList;
   private final Boolean[] mSensorFinishedList;
   private Runnable mOnSensorTimeout = null;
 
@@ -41,12 +44,12 @@ public class SensorPoller extends HandlerThread {
     mServiceHandler = handler;
     mDbHelper = dbHelper;
 
-    mSensorList = new Sensor[sensorEnums.length];
+    mSensorList = new PlatysSensor[sensorEnums.length];
     mSensorFinishedList = new Boolean[sensorEnums.length];
 
     for (int i = 0; i < sensorEnums.length; i++) {
       SensorEnum sensorEnum = sensorEnums[i];
-      Sensor sensor = null;
+      PlatysSensor sensor = null;
       switch (sensorEnum) {
       case WiFiApSensor:
         sensor = new WiFiAccessPointSensor(mContext, mSensorResponseHandler, mDbHelper, i);
@@ -56,6 +59,9 @@ public class SensorPoller extends HandlerThread {
         break;
       case GpsSensor:
         sensor = new GpsSensor(mContext, mSensorResponseHandler, mDbHelper, i);
+        break;
+      case AccelerometerSensor:
+        sensor = new AccelerometerSensor(mContext, mSensorResponseHandler, mDbHelper, i);
         break;
       }
 
@@ -71,7 +77,7 @@ public class SensorPoller extends HandlerThread {
   private final Handler mSensorResponseHandler = new Handler() {
     @Override
     public void handleMessage(Message msg) {
-      if (msg.what == Sensor.MSG_FROM_SENSOR) {
+      if (msg.what == PlatysSensor.MSG_FROM_SENSOR) {
         Log.i(TAG, "Finished sensor index: " + msg.arg1);
         mSensorFinishedList[msg.arg1] = true;
         mSensorList[msg.arg1].stopSensor();
@@ -104,8 +110,13 @@ public class SensorPoller extends HandlerThread {
 
     mSensorResponseHandler.postDelayed(mOnSensorTimeout, getTimeOutValue());
 
-    for (final Sensor sensor : mSensorList) {
+    for (final PlatysSensor sensor : mSensorList) {
       sensor.startSensor();
+
+      // TODO: Right now, all operation execute on the main thread. Investigate
+      // if multithreading can help. Some sensors (e.g., LocationListener
+      // require that the thread be a Looper.
+
       /*mThreadPool.submit(new Runnable() {
         @Override
         public void run() {
@@ -128,25 +139,26 @@ public class SensorPoller extends HandlerThread {
     scheduleNext();
 
     Message msgToService = mServiceHandler.obtainMessage(PlatysTask.PLATYS_TASK_SENSE.ordinal());
-    msgToService.arg1 = Sensor.SENSING_SUCCEEDED;
+    msgToService.arg1 = SensorMsg.SENSING_SUCCEEDED.ordinal();
     msgToService.sendToTarget();
   }
 
   private void scheduleNext() {
     Intent intentToSchedule = new Intent(mContext.getApplicationContext(), PlatysReceiver.class);
     intentToSchedule.setAction(PlatysReceiver.ACTION_SENSE);
-    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, 5 * 60 * 1000);
+    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, SCAN_FREQUENCY);
   }
 
   private long getTimeOutValue() {
-    long longestTimeoutValue = 0;
+    /*long longestTimeoutValue = 0;
     for (final Sensor sensor : mSensorList) {
       if (longestTimeoutValue < sensor.getTimeoutValue()) {
         longestTimeoutValue = sensor.getTimeoutValue();
       }
     }
-    // return longestTimeoutValue;
-    return 60000; // 1 min. for testing.
+    return longestTimeoutValue;*/
+
+    return DEFAULT_TIMEOUT; // For testing.
   }
 
 }

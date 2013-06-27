@@ -27,6 +27,8 @@ public class DbxCoreApiSyncer implements Runnable {
 
   private static final String SENSOR_SYNC_DIR_PATH = "/PlatysApp/SensorData/";
 
+  private static final long SYNC_FREQUENCY = 60 * 60 * 1000; // 1 hour.
+
   private final Context mContext;
   private final Handler mServiceHandler;
   private final SensorDbHelper mSensorDbHelper;
@@ -85,7 +87,7 @@ public class DbxCoreApiSyncer implements Runnable {
   private void scheduleNext() {
     Intent intentToSchedule = new Intent(mContext.getApplicationContext(), PlatysReceiver.class);
     intentToSchedule.setAction(PlatysReceiver.ACTION_SYNC);
-    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, 60 * 60 * 1000);
+    PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, SYNC_FREQUENCY);
   }
 
 }

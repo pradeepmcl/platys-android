@@ -17,13 +17,13 @@ import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
 
-import edu.ncsu.mas.platys.android.sensor.Sensor;
+import edu.ncsu.mas.platys.android.sensor.PlatysSensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
 import edu.ncsu.mas.platys.common.sensordata.SensorData;
 import edu.ncsu.mas.platys.common.sensordata.WifiAccessPointData;
 
-public class WiFiAccessPointSensor implements Sensor {
+public class WiFiAccessPointSensor implements PlatysSensor {
 
   private static final String TAG = "Platys" + WiFiAccessPointSensor.class.getSimpleName();
 
@@ -48,14 +48,14 @@ public class WiFiAccessPointSensor implements Sensor {
     mWifiMgr = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
     mDbHelper = dbHelper;
     mSensorIndex = sensorIndex;
-    mMsgToPoller = mHandler.obtainMessage(Sensor.MSG_FROM_SENSOR);
+    mMsgToPoller = mHandler.obtainMessage(PlatysSensor.MSG_FROM_SENSOR);
     mMsgToPoller.arg1 = mSensorIndex;
   }
 
   @Override
   public void startSensor() {
     if (!mWifiMgr.isWifiEnabled()) {
-      mMsgToPoller.arg2 = SENSOR_DISABLED;
+      mMsgToPoller.arg2 = SensorMsg.SENSOR_DISABLED.ordinal();
       mMsgToPoller.sendToTarget();
       return;
     }
@@ -69,7 +69,7 @@ public class WiFiAccessPointSensor implements Sensor {
     mSensingStartTime = System.currentTimeMillis();
 
     if (mWifiMgr.startScan() == false) {
-      mMsgToPoller.arg2 = SENSING_NOT_INITIATED;
+      mMsgToPoller.arg2 = SensorMsg.SENSING_NOT_INITIATED.ordinal();
       mMsgToPoller.sendToTarget();
     }
   }
@@ -90,7 +90,7 @@ public class WiFiAccessPointSensor implements Sensor {
     @Override
     public void onReceive(final Context context, Intent intent) {
       Log.i(TAG, "Received WiFI AP list available broadcast");
-      int result = Sensor.SENSING_SUCCEEDED;
+      int result = SensorMsg.SENSING_SUCCEEDED.ordinal();
       final List<ScanResult> apList = mWifiMgr.getScanResults();
       final WifiInfo connectedAp = mWifiMgr.getConnectionInfo();
       try {
@@ -122,10 +122,10 @@ public class WiFiAccessPointSensor implements Sensor {
           }
         });
       } catch (SQLException e) {
-        result = SENSING_FAILED;
+        result = SensorMsg.SENSING_FAILED.ordinal();
         Log.e(TAG, "Database operation failed.", e);
       } catch (Exception e) {
-        result = SENSING_FAILED;
+        result = SensorMsg.SENSING_FAILED.ordinal();
         Log.e(TAG, "Unknown error", e);
       }
 

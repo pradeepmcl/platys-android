@@ -35,6 +35,7 @@ public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    setTitle(getString(R.string.app_name));
   }
 
   @Override
@@ -44,7 +45,7 @@ public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
     mUsername = ServerModeChooserActivity.getUsername(this.getApplicationContext());
     if (mUsername.length() == 0) {
       startActivity(new Intent(this, ServerModeChooserActivity.class));
-    } else if (mActionBar == null) {
+    } else {
       setupTabs();
       PlatysReceiver.startBackgroundTasks(this);
     }
@@ -66,7 +67,6 @@ public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
     mActionBar = getActionBar();
     mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-    mActionBar.setTitle(getString(R.string.app_name));
     mActionBar.setSubtitle(mUsername);
 
     mActionBar.removeAllTabs();

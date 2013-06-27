@@ -13,7 +13,7 @@ import com.j256.ormlite.dao.Dao;
 
 import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
-import edu.ncsu.mas.platys.android.sensor.Sensor;
+import edu.ncsu.mas.platys.android.sensor.PlatysSensor.SensorMsg;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
 import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData;
@@ -37,7 +37,7 @@ public class PlaceLabelSaver implements Runnable {
   @Override
   public void run() {
     Log.i(TAG, "Running PlaceLabelSaver.");
-    int result = Sensor.SENSING_SUCCEEDED;
+    int result = SensorMsg.SENSING_SUCCEEDED.ordinal();
     try {
       final long sensingStartTime = mDetailsIntent.getLongExtra(
           PlatysReceiver.EXTRA_LABELING_START_TIME, 0);
@@ -68,10 +68,10 @@ public class PlaceLabelSaver implements Runnable {
         }
       });
     } catch (SQLException e) {
-      result = Sensor.SENSING_FAILED;
+      result = SensorMsg.SENSING_FAILED.ordinal();
       Log.e(TAG, "Database operation failed.", e);
     } catch (Exception e) {
-      result = Sensor.SENSING_FAILED;
+      result = SensorMsg.SENSING_FAILED.ordinal();
       Log.e(TAG, "Unknown error", e);
     } finally {
       Message msgToService = mServiceHandler.obtainMessage(PlatysTask.PLATYS_TASK_SAVE_LABELS

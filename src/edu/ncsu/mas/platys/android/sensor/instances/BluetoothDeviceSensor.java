@@ -11,12 +11,16 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import edu.ncsu.mas.platys.android.sensor.Sensor;
+
+import com.j256.ormlite.dao.Dao;
+
+import edu.ncsu.mas.platys.android.sensor.PlatysSensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
 import edu.ncsu.mas.platys.common.sensordata.BluetoothDeviceData;
+import edu.ncsu.mas.platys.common.sensordata.SensorData;
 
-public class BluetoothDeviceSensor implements Sensor {
+public class BluetoothDeviceSensor implements PlatysSensor {
 
   private static final String TAG = "Platys" + BluetoothDeviceSensor.class.getSimpleName();
 
@@ -29,6 +33,8 @@ public class BluetoothDeviceSensor implements Sensor {
   private final int mSensorIndex;
   private final Message mMsgToPoller;
 
+  private Dao<SensorData, ?> mBtDao = null;
+
   private BluetoothDeviceFoundReceiver mBluetoothDeviceFoundReceiver = null;
 
   private long mSensingStartTime;
@@ -40,14 +46,14 @@ public class BluetoothDeviceSensor implements Sensor {
     mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     mDbHelper = dbHelper;
     mSensorIndex = sensorIndex;
-    mMsgToPoller = mHandler.obtainMessage(Sensor.MSG_FROM_SENSOR, mSensorIndex);
+    mMsgToPoller = mHandler.obtainMessage(PlatysSensor.MSG_FROM_SENSOR, mSensorIndex);
     mMsgToPoller.arg1 = mSensorIndex;
   }
 
   @Override
   public void startSensor() {
     if (!mBluetoothAdapter.isEnabled()) {
-      mMsgToPoller.arg2 = SENSOR_DISABLED;
+      mMsgToPoller.arg2 = SensorMsg.SENSOR_DISABLED.ordinal();
       mMsgToPoller.sendToTarget();
       return;
     }
@@ -61,7 +67,7 @@ public class BluetoothDeviceSensor implements Sensor {
       mSensingStartTime = System.currentTimeMillis();
 
       if (mBluetoothAdapter.startDiscovery() == false) {
-        mMsgToPoller.arg2 = SENSING_NOT_INITIATED;
+        mMsgToPoller.arg2 = SensorMsg.SENSING_NOT_INITIATED.ordinal();
         mMsgToPoller.sendToTarget();
       }
     }
@@ -84,7 +90,7 @@ public class BluetoothDeviceSensor implements Sensor {
     @Override
     public void onReceive(final Context context, Intent intent) {
       Log.i(TAG, "Received Bluetooth device found broadcast");
-      int result = SENSING_SUCCEEDED;
+      // int result = SENSING_SUCCEEDED;
       BluetoothDevice dev = intent
           .getParcelableExtra(android.bluetooth.BluetoothDevice.EXTRA_DEVICE);
       Short devRssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, (short) 0);
@@ -96,10 +102,12 @@ public class BluetoothDeviceSensor implements Sensor {
       btDeviceData.setSsid(dev.getName());
       btDeviceData.setRssi(devRssi);
       try {
-        mDbHelper.getDao(PlatysSensorEnum.BLUETOOTH_DEVICE_SENSOR.getDataClass()).create(
-            btDeviceData);
+        if (mBtDao == null) {
+          mBtDao = mDbHelper.getDao(PlatysSensorEnum.BLUETOOTH_DEVICE_SENSOR.getDataClass());
+        }
+        mBtDao.create(btDeviceData);
       } catch (SQLException e) {
-        result = SENSING_FAILED;
+        // result = SENSING_FAILED;
         Log.e(TAG, "Database operation failed.", e);
       }
 
