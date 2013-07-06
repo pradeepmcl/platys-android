@@ -1,0 +1,44 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".SoftwareUpdaterActivity" >
+
+    <TextView
+        android:id="@+id/tvHeadingSoftwareUpdater"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/activity_software_updater_heading"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/tvSubheadingSoftwareUpdater"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tvHeadingSoftwareUpdater"
+        android:layout_alignRight="@+id/tvHeadingSoftwareUpdater"
+        android:layout_below="@+id/tvHeadingSoftwareUpdater"
+        android:layout_marginTop="10dp"
+        android:text="@string/activity_software_updater_subheading"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/tvIntentWarningSoftwareUpdater"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tvSubheadingSoftwareUpdater"
+        android:layout_alignRight="@+id/tvSubheadingSoftwareUpdater"
+        android:layout_below="@+id/tvSubheadingSoftwareUpdater"
+        android:layout_marginTop="10dp"
+        android:text="@string/activity_software_updater_internet_warning"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:typeface="sans" />
+
+</RelativeLayout>

@@ -11,10 +11,10 @@ import android.util.Log;
 import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
 import edu.ncsu.mas.platys.android.sensor.PlatysSensor.SensorMsg;
-import edu.ncsu.mas.platys.android.sensor.instances.AccelerometerSensor;
-import edu.ncsu.mas.platys.android.sensor.instances.BluetoothDeviceSensor;
-import edu.ncsu.mas.platys.android.sensor.instances.GpsSensor;
-import edu.ncsu.mas.platys.android.sensor.instances.WiFiAccessPointSensor;
+import edu.ncsu.mas.platys.android.sensor.types.AccelerometerSensor;
+import edu.ncsu.mas.platys.android.sensor.types.BluetoothDeviceSensor;
+import edu.ncsu.mas.platys.android.sensor.types.GpsSensor;
+import edu.ncsu.mas.platys.android.sensor.types.WiFiAccessPointSensor;
 
 public class SensorPoller extends HandlerThread {
 
@@ -22,7 +22,7 @@ public class SensorPoller extends HandlerThread {
   private static final String HANDLER_THREAD_NAME = SensorPoller.class.getName();
 
   private static final long SCAN_FREQUENCY = 5 * 60 * 1000; // 5 min.
-  private static final long DEFAULT_TIMEOUT = 2 * 60 * 1000; // 2 min.
+  private static final long DEFAULT_TIMEOUT = 1 * 60 * 1000; // 1 min.
 
   private final Context mContext;
   // private final ExecutorService mThreadPool;

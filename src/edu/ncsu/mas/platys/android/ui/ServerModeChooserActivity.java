@@ -25,6 +25,7 @@ import com.dropbox.client2.session.AppKeyPair;
 import com.dropbox.client2.session.Session.AccessType;
 
 import edu.ncsu.mas.platys.android.R;
+import edu.ncsu.mas.platys.common.sensordata.PlatysInstanceInfo.ServerType;
 import edu.ncsu.mas.platys.common.constasnts.SyncConstants;
 
 public class ServerModeChooserActivity extends Activity {
@@ -34,19 +35,16 @@ public class ServerModeChooserActivity extends Activity {
   public static final String PREFS_KEY_SERVER_MODE = "server_mode";
 
   public static final String PREFS_SERVER_USER_NAME = "server_user_name";
+  public static final String PREFS_SERVER_USER_ID = "server_user_id";
   public static final String PREFS_SERVER_USER_EMAIL = "server_user_email";
 
   public static final String PREFS_DBX_ACCESS_TYPE = "dbx_access_type";
   public static final String PREFS_DBX_ACCESS_KEY_NAME = "dbx_access_key_name";
   public static final String PREFS_DBX_ACCESS_KEY_SECRET = "dbx_access_key_secret";
 
-  public enum ServerMode {
-    DROPBOX_APP_FOLDER, DROPBOX_SHAREABLE_FOLDER, UNKNOWN;
-  }
-
   private static final String TAG = "Platys" + ServerModeChooserActivity.class.getName();
 
-  private ServerMode mServerMode;
+  private ServerType mServerMode;
 
   private AccessType mDbxAccessType;
 
@@ -68,7 +66,7 @@ public class ServerModeChooserActivity extends Activity {
 
     mDropboxDesc = (TextView) findViewById(R.id.tvDbxAppFolderModeDescServerModeChooser);
     mPlatysServerDesc = (TextView) findViewById(R.id.tvDbxSharableFolderModeDescServerModeChooser);
-    for (ServerMode _mode : ServerMode.values()) {
+    for (ServerType _mode : ServerType.values()) {
       setDescriptionViewVisibility(_mode, View.GONE);
     }
 
@@ -78,16 +76,16 @@ public class ServerModeChooserActivity extends Activity {
       public void onCheckedChanged(RadioGroup group, int checkedId) {
         RadioButton checkedButton = (RadioButton) group.findViewById(checkedId);
         if (checkedButton.isChecked()) {
-          for (ServerMode _mode : ServerMode.values()) {
+          for (ServerType _mode : ServerType.values()) {
             setDescriptionViewVisibility(_mode, View.GONE);
           }
           if (checkedButton.getText().equals(
               getString(R.string.activity_server_mode_chooser_dropbox_app_folder))) {
-            mServerMode = ServerMode.DROPBOX_APP_FOLDER;
+            mServerMode = ServerType.DROPBOX_APP_FOLDER;
             mDbxAccessType = AccessType.APP_FOLDER;
           } else if (checkedButton.getText().equals(
               getString(R.string.activity_server_mode_chooser_dropbox_sharable_folder))) {
-            mServerMode = ServerMode.DROPBOX_SHAREABLE_FOLDER;
+            mServerMode = ServerType.DROPBOX_SHAREABLE_FOLDER;
             mDbxAccessType = AccessType.DROPBOX;
           }
           setDescriptionViewVisibility(mServerMode, View.VISIBLE);
@@ -96,7 +94,7 @@ public class ServerModeChooserActivity extends Activity {
     });
   }
 
-  private void setDescriptionViewVisibility(ServerMode mode, int visibility) {
+  private void setDescriptionViewVisibility(ServerType mode, int visibility) {
     TextView modeDescView;
     switch (mode) {
     case DROPBOX_APP_FOLDER:
@@ -146,7 +144,7 @@ public class ServerModeChooserActivity extends Activity {
     }
   }
 
-  private void handleServerChoice(ServerMode mode) {
+  private void handleServerChoice(ServerType mode) {
     switch (mode) {
     case DROPBOX_APP_FOLDER:
       // Continue to DROPBOX_SHAREABLE_FOLDER.
@@ -188,17 +186,23 @@ public class ServerModeChooserActivity extends Activity {
     mPreferencesEditor.commit();
   }
 
-  public static ServerMode getServerMode(Context context) {
+  public static ServerType getServerMode(Context context) {
     SharedPreferences mPreferences = context.getSharedPreferences(PLATYS_SERVER_PREFS,
         Context.MODE_PRIVATE);
     String serverModeString = mPreferences.getString(PREFS_KEY_SERVER_MODE, "");
 
     if (serverModeString.length() == 0) {
-      return ServerMode.UNKNOWN;
+      return ServerType.UNKNOWN;
     }
-    return ServerMode.valueOf(serverModeString);
+    return ServerType.valueOf(serverModeString);
   }
 
+  public static String getUserId(Context context) {
+    SharedPreferences mPreferences = context.getSharedPreferences(PLATYS_SERVER_PREFS,
+        Context.MODE_PRIVATE);
+    return mPreferences.getString(PREFS_SERVER_USER_ID, "");
+  }
+  
   public static String getUsername(Context context) {
     SharedPreferences mPreferences = context.getSharedPreferences(PLATYS_SERVER_PREFS,
         Context.MODE_PRIVATE);
@@ -254,6 +258,7 @@ public class ServerModeChooserActivity extends Activity {
       if (account != null) {
         SharedPreferences.Editor mPreferencesEditor = getSharedPreferences(PLATYS_SERVER_PREFS,
             Context.MODE_PRIVATE).edit();
+        mPreferencesEditor.putString(PREFS_SERVER_USER_ID, Long.toString(account.uid));
         mPreferencesEditor.putString(PREFS_SERVER_USER_NAME, account.displayName);
         mPreferencesEditor.commit();
 

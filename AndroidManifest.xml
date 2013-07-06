@@ -17,8 +17,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -53,11 +53,13 @@
             </intent-filter>
         </activity>
 
-        <!--  <service
+        <!--
+              <service
             android:name="com.dropbox.sync.android.DbxSyncService"
             android:enabled="true"
             android:exported="false"
-            android:label="Dropbox Sync" />-->
+            android:label="Dropbox Sync" />
+        -->
 
         <receiver android:name="edu.ncsu.mas.platys.android.PlatysReceiver" >
             <intent-filter>
@@ -72,6 +74,10 @@
         <activity
             android:name="edu.ncsu.mas.platys.android.ui.DbxModeChooserActivity"
             android:label="@string/title_activity_dbx_mode_chooser" >
+        </activity>
+        <activity
+            android:name="edu.ncsu.mas.platys.android.SoftwareUpdaterActivity"
+            android:label="@string/title_activity_software_updater" >
         </activity>
     </application>
 

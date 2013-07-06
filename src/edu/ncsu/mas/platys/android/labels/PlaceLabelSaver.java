@@ -15,7 +15,7 @@ import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
 import edu.ncsu.mas.platys.android.sensor.PlatysSensor.SensorMsg;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
-import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
+import edu.ncsu.mas.platys.common.constasnts.PlatysSensorType;
 import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData;
 import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData.LabelType;
 import edu.ncsu.mas.platys.common.sensordata.SensorData;
@@ -50,7 +50,7 @@ public class PlaceLabelSaver implements Runnable {
           .getSerializableExtra(PlatysReceiver.EXTRA_LABEL_TYPES_LIST);
 
       final Dao<SensorData, ?> sensorDao = mSensorDbHelper
-          .getDao(PlatysSensorEnum.PLACE_LABEL_SENSOR.getDataClass());
+          .getDao(PlatysSensorType.PLACE_LABEL_SENSOR.getDataClass());
 
       sensorDao.callBatchTasks(new Callable<Void>() {
         @Override

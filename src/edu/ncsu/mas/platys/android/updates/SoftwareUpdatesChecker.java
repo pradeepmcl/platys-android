@@ -1,4 +1,4 @@
-package edu.ncsu.mas.platys.android.software;
+package edu.ncsu.mas.platys.android.updates;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,25 +16,25 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
 import edu.ncsu.mas.platys.android.R;
+import edu.ncsu.mas.platys.android.ui.SoftwareUpdaterActivity;
 
-public class SoftwareUpdater implements Runnable {
-  private static final String TAG = "Platys" + SoftwareUpdater.class.getSimpleName();
+public class SoftwareUpdatesChecker implements Runnable {
+  private static final String TAG = "Platys" + SoftwareUpdatesChecker.class.getSimpleName();
 
-  private static final String SOFTWARE_UPDATE_URL = "http://platys.csc.ncsu.edu/platys/resources/PlatysAndroid.apk";
+  public static final String SOFTWARE_UPDATE_URL = "http://platys.csc.ncsu.edu/platys/resources/PlatysAndroid.apk";
 
   private static final long CHECK_FREQUENCY = 4 * 60 * 60 * 1000;
 
   private final Context mContext;
   private final Handler mServiceHandler;
 
-  public SoftwareUpdater(Context context, Handler serviceHandler) {
+  public SoftwareUpdatesChecker(Context context, Handler serviceHandler) {
     Log.i(TAG, "Creating SoftwareUpdater.");
     mContext = context;
     mServiceHandler = serviceHandler;
@@ -52,7 +52,7 @@ public class SoftwareUpdater implements Runnable {
       long serverLastUpdateTime = getLastModifiedTime();
 
       if (appInstallTime < serverLastUpdateTime) {
-        Intent notifIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(SOFTWARE_UPDATE_URL));
+        Intent notifIntent = new Intent(mContext, SoftwareUpdaterActivity.class);
         PendingIntent pNotifIntent = PendingIntent.getActivity(mContext, 0, notifIntent, 0);
 
         Notification notif = new Notification.Builder(mContext).setContentTitle("Platys")
@@ -74,7 +74,7 @@ public class SoftwareUpdater implements Runnable {
       scheduleNext();
 
       Message msgToService = mServiceHandler
-          .obtainMessage(PlatysTask.PLATYS_CHECK_SOFTWARE_UPDATES.ordinal());
+          .obtainMessage(PlatysTask.PLATYS_TASK_CHECK_SW_UPDATES.ordinal());
       msgToService.arg1 = updateStatus;
       msgToService.sendToTarget();
     }

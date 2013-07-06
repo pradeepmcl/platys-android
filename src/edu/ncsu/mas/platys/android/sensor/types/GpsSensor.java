@@ -1,4 +1,4 @@
-package edu.ncsu.mas.platys.android.sensor.instances;
+package edu.ncsu.mas.platys.android.sensor.types;
 
 import java.sql.SQLException;
 
@@ -15,7 +15,7 @@ import com.j256.ormlite.dao.Dao;
 
 import edu.ncsu.mas.platys.android.sensor.PlatysSensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
-import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
+import edu.ncsu.mas.platys.common.constasnts.PlatysSensorType;
 import edu.ncsu.mas.platys.common.sensordata.GpsData;
 import edu.ncsu.mas.platys.common.sensordata.SensorData;
 
@@ -99,7 +99,7 @@ public class GpsSensor implements PlatysSensor {
 
       try {
         if (mGpsDao == null) {
-          mGpsDao = mDbHelper.getDao(PlatysSensorEnum.GPS_SENSOR.getDataClass());
+          mGpsDao = mDbHelper.getDao(PlatysSensorType.GPS_SENSOR.getDataClass());
         }
         mGpsDao.create(gpsData);
       } catch (SQLException e) {
@@ -124,7 +124,7 @@ public class GpsSensor implements PlatysSensor {
 
       try {
         if (mGpsDao == null) {
-          mGpsDao = mDbHelper.getDao(PlatysSensorEnum.GPS_SENSOR.getDataClass());
+          mGpsDao = mDbHelper.getDao(PlatysSensorType.GPS_SENSOR.getDataClass());
         }
         mGpsDao.create(gpsData);
       } catch (SQLException e) {

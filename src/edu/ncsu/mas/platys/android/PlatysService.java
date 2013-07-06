@@ -8,6 +8,7 @@ import java.util.Map;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -20,8 +21,8 @@ import edu.ncsu.mas.platys.android.labels.PlaceLabelSaver;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.android.sensor.SensorEnum;
 import edu.ncsu.mas.platys.android.sensor.SensorPoller;
-import edu.ncsu.mas.platys.android.software.SoftwareUpdater;
 import edu.ncsu.mas.platys.android.sync.DbxCoreApiSyncer;
+import edu.ncsu.mas.platys.android.updates.SoftwareUpdatesChecker;
 
 public class PlatysService extends Service {
 
@@ -32,10 +33,12 @@ public class PlatysService extends Service {
   private static boolean swUpdateInProgress = false;
   
   public enum PlatysTask {
-    PLATYS_TASK_SENSE(PlatysReceiver.ACTION_SENSE),
-    PLATYS_TASK_SYNC(PlatysReceiver.ACTION_SYNC),
-    PLATYS_TASK_SAVE_LABELS(PlatysReceiver.ACTION_SAVE_LABELS),
-    PLATYS_CHECK_SOFTWARE_UPDATES(PlatysReceiver.ACTION_UPDATE_SW),
+    PLATYS_TASK_SENSE (PlatysReceiver.ACTION_SENSE),
+    PLATYS_TASK_SYNC (PlatysReceiver.ACTION_SYNC),
+    PLATYS_TASK_SAVE_LABELS (PlatysReceiver.ACTION_SAVE_LABELS),
+    PLATYS_TASK_CHECK_SW_UPDATES (PlatysReceiver.ACTION_CHECK_SW_UPDATE),
+    PLATYS_TASK_UPDATE_SW (PlatysReceiver.ACTION_UPDATE_SW),
+    PLATYS_TASK_SYNC_AND_UPDATE_SW (PlatysReceiver.ACTION_SYNC_AND_UPDATE_SW),
     UNKNOWN_TASK ("Unknown_Task");
 
     String mValue;
@@ -116,11 +119,14 @@ public class PlatysService extends Service {
     PlatysTask platysTask = PlatysTask.fromString(taskStr);
 
     switch (platysTask) {
-    case PLATYS_CHECK_SOFTWARE_UPDATES:
+    case PLATYS_TASK_CHECK_SW_UPDATES:
       if (!swUpdateInProgress) {
         swUpdateInProgress = true;
         startTaskInParallel(platysTask, intent);
       }
+      break;
+    case PLATYS_TASK_UPDATE_SW:
+      startTaskInSequence(platysTask, intent);
       break;
     case PLATYS_TASK_SAVE_LABELS:
       startTaskInSequence(platysTask, intent);
@@ -137,6 +143,15 @@ public class PlatysService extends Service {
         startTaskInSequence(platysTask, intent);
       }
       break;
+    case PLATYS_TASK_SYNC_AND_UPDATE_SW:
+      Intent syncIntent = new Intent(intent);
+      syncIntent.setAction(PlatysReceiver.ACTION_SYNC);
+      startTask(syncIntent);
+      
+      Intent updateSwIntent = new Intent(intent);
+      updateSwIntent.setAction(PlatysReceiver.ACTION_UPDATE_SW);
+      startTask(updateSwIntent);      
+      break;
     default:
       break;
     }
@@ -150,9 +165,9 @@ public class PlatysService extends Service {
     }
 
     switch (platysTask) {
-    case PLATYS_CHECK_SOFTWARE_UPDATES:
+    case PLATYS_TASK_CHECK_SW_UPDATES:
       Log.i(TAG, "Perform Platys software update action.");
-      runningParallelTasksMap.put(platysTask, new Thread(new SoftwareUpdater(
+      runningParallelTasksMap.put(platysTask, new Thread(new SoftwareUpdatesChecker(
           getApplicationContext(), mServiceHandler)));
       runningParallelTasksMap.get(platysTask).start();
       break;
@@ -197,6 +212,12 @@ public class PlatysService extends Service {
                 SensorDbHelper.class)));
         runningSequentialTaskThread.start();
         break;
+        
+      case PLATYS_TASK_UPDATE_SW:
+        Intent updateIntent = new Intent(Intent.ACTION_VIEW,
+            Uri.parse(SoftwareUpdatesChecker.SOFTWARE_UPDATE_URL));
+        startActivity(updateIntent);
+        break;
 
       default: // This should never happen
         break;
@@ -214,7 +235,7 @@ public class PlatysService extends Service {
 
       PlatysTask msgFromTask = PlatysTask.values()[msg.what];
       switch (msgFromTask) {
-      case PLATYS_CHECK_SOFTWARE_UPDATES:
+      case PLATYS_TASK_CHECK_SW_UPDATES:
         Log.i(TAG, "Software update finished.");
         runningParallelTasksMap.remove(msgFromTask);
         swUpdateInProgress = false;
@@ -260,6 +281,7 @@ public class PlatysService extends Service {
   @Override
   public void onDestroy() {
     super.onDestroy();
+    Log.i(TAG, "Destroying the service");
     OpenHelperManager.releaseHelper();
     PowerManager.WakeLock lock = getLock(getApplicationContext());
     

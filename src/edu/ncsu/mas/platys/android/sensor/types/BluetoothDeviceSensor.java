@@ -1,4 +1,4 @@
-package edu.ncsu.mas.platys.android.sensor.instances;
+package edu.ncsu.mas.platys.android.sensor.types;
 
 import java.sql.SQLException;
 
@@ -16,7 +16,7 @@ import com.j256.ormlite.dao.Dao;
 
 import edu.ncsu.mas.platys.android.sensor.PlatysSensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
-import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
+import edu.ncsu.mas.platys.common.constasnts.PlatysSensorType;
 import edu.ncsu.mas.platys.common.sensordata.BluetoothDeviceData;
 import edu.ncsu.mas.platys.common.sensordata.SensorData;
 
@@ -103,7 +103,7 @@ public class BluetoothDeviceSensor implements PlatysSensor {
       btDeviceData.setRssi(devRssi);
       try {
         if (mBtDao == null) {
-          mBtDao = mDbHelper.getDao(PlatysSensorEnum.BLUETOOTH_DEVICE_SENSOR.getDataClass());
+          mBtDao = mDbHelper.getDao(PlatysSensorType.BLUETOOTH_DEVICE_SENSOR.getDataClass());
         }
         mBtDao.create(btDeviceData);
       } catch (SQLException e) {

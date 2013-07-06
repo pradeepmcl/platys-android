@@ -11,27 +11,32 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
-import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
-import edu.ncsu.mas.platys.common.sensordata.SensorDbInstanceInfo;
+import edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity;
+import edu.ncsu.mas.platys.common.constasnts.PlatysSensorType;
+import edu.ncsu.mas.platys.common.sensordata.PlatysInstanceInfo;
 
 public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
 
   private static final String DATABASE_NAME = "sensor.db";
 
   private static final int DATABASE_VERSION = 1;
+  
+  private final Context mContext;
 
   public SensorDbHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    
+    mContext = context;
   }
 
   @Override
   public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
     try {
-      for (PlatysSensorEnum sensor : PlatysSensorEnum.values()) {
+      for (PlatysSensorType sensor : PlatysSensorType.values()) {
         TableUtils.createTableIfNotExists(connectionSource, sensor.getDataClass());
       }
 
-      addDbInstanceInfo();
+      addInstanceInfo();
     } catch (SQLException e) {
       Log.e(SensorDbHelper.class.getName(), "Can't create database", e);
       throw new RuntimeException(e);
@@ -49,13 +54,15 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
     super.close();
   }
 
-  private void addDbInstanceInfo() throws SQLException {
-    Dao<SensorDbInstanceInfo, ?> instanceInfoDao = getDao(PlatysSensorEnum.SENSOR_DB_INSTANCE_INFO
+  private void addInstanceInfo() throws SQLException {
+    Dao<PlatysInstanceInfo, ?> instanceInfoDao = getDao(PlatysSensorType.PLATYS_INSTANCE_INFO
         .getDataClass());
     if (instanceInfoDao.countOf() == 0) {
-      SensorDbInstanceInfo instanceInfo = new SensorDbInstanceInfo();
+      PlatysInstanceInfo instanceInfo = new PlatysInstanceInfo();
       instanceInfo.setCreationTime(System.currentTimeMillis());
-      instanceInfo.setHostMacAddr(100); // TODO
+      instanceInfo.setServerType(ServerModeChooserActivity.getServerMode(mContext));
+      instanceInfo.setUserId(ServerModeChooserActivity.getUserId(mContext));
+      instanceInfo.setUserDetails("Displayname:" + ServerModeChooserActivity.getUsername(mContext));
       instanceInfoDao.create(instanceInfo);
     }
   }

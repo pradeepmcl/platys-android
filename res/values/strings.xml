@@ -47,5 +47,9 @@
     <string name="place_label_description">Enter a new place label.</string>
     <string name="title_activity_dbx_mode_chooser">DbxModeChooserActivity</string>
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_software_updater">SoftwareUpdaterActivity</string>
+    <string name="activity_software_updater_heading">Updating Platys software!</string>
+    <string name="activity_software_updater_subheading">Please wait while the data is backed up&#8230;</string>
+    <string name="activity_software_updater_internet_warning">You must be connected to the Internet.</string>
 
 </resources>

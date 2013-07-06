@@ -1,4 +1,4 @@
-package edu.ncsu.mas.platys.android.sensor.instances;
+package edu.ncsu.mas.platys.android.sensor.types;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -16,7 +16,7 @@ import com.j256.ormlite.dao.Dao;
 
 import edu.ncsu.mas.platys.android.sensor.PlatysSensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
-import edu.ncsu.mas.platys.common.constasnts.PlatysSensorEnum;
+import edu.ncsu.mas.platys.common.constasnts.PlatysSensorType;
 import edu.ncsu.mas.platys.common.sensordata.AccelerometerData;
 import edu.ncsu.mas.platys.common.sensordata.SensorData;
 
@@ -114,7 +114,7 @@ public class AccelerometerSensor implements PlatysSensor {
       try {
         if (mAccelerometerDao == null) {
           mAccelerometerDao = mDbHelper
-              .getDao(PlatysSensorEnum.ACCELEROMETER_SENSOR.getDataClass());
+              .getDao(PlatysSensorType.ACCELEROMETER_SENSOR.getDataClass());
         }
         mAccelerometerDao.create(accData);
       } catch (SQLException e) {
