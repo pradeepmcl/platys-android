@@ -31,6 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/activity_server_mode_chooser_dropbox_sharable_folder" />
+
     </RadioGroup>
 
     <TextView

@@ -92,6 +92,11 @@ public class ServerModeChooserActivity extends Activity {
         }
       }
     });
+    
+    // Enable default option
+    RadioButton sharableDbxFolderRb = (RadioButton) findViewById(
+        R.id.rbDbxSharableFolderModeServerModeChooser);
+    sharableDbxFolderRb.setChecked(true);
   }
 
   private void setDescriptionViewVisibility(ServerType mode, int visibility) {
@@ -202,7 +207,7 @@ public class ServerModeChooserActivity extends Activity {
         Context.MODE_PRIVATE);
     return mPreferences.getString(PREFS_SERVER_USER_ID, "");
   }
-  
+
   public static String getUsername(Context context) {
     SharedPreferences mPreferences = context.getSharedPreferences(PLATYS_SERVER_PREFS,
         Context.MODE_PRIVATE);
@@ -212,13 +217,13 @@ public class ServerModeChooserActivity extends Activity {
   public static AndroidAuthSession getDbxSession(Context context) {
     AppKeyPair appKeys = new AppKeyPair(SyncConstants.getDbxappkey(),
         SyncConstants.getDbxappsecret());
-    
+
     SharedPreferences mPreferences = context.getSharedPreferences(PLATYS_SERVER_PREFS,
         Context.MODE_PRIVATE);
     String accessKey = mPreferences.getString(PREFS_DBX_ACCESS_KEY_NAME, "");
     String accessSecret = mPreferences.getString(PREFS_DBX_ACCESS_KEY_SECRET, "");
     String accessTypeStr = mPreferences.getString(PREFS_DBX_ACCESS_TYPE, "");
-    
+
     if (accessKey.length() == 0 || accessSecret.length() == 0 || accessTypeStr.length() == 0) {
       throw new IllegalStateException("One of the cached values is empty (" + accessKey.length()
           + ", " + accessSecret.length() + ", " + accessTypeStr.length() + ")");
@@ -227,7 +232,7 @@ public class ServerModeChooserActivity extends Activity {
     return (new AndroidAuthSession(appKeys, AccessType.valueOf(accessTypeStr), new AccessTokenPair(
         accessKey, accessSecret)));
   }
-  
+
   public static AccessTokenPair getDbxAccessTokenPair(Context context) {
     SharedPreferences mPreferences = context.getSharedPreferences(PLATYS_SERVER_PREFS,
         Context.MODE_PRIVATE);
@@ -242,6 +247,7 @@ public class ServerModeChooserActivity extends Activity {
     protected void onPreExecute() {
       ServerModeChooserActivity.this.setProgressBarIndeterminateVisibility(true);
     }
+
     @Override
     protected Account doInBackground(Void... arg0) {
       Account retAccount = null;

@@ -30,7 +30,7 @@ public class PlatysService extends Service {
 
   private static boolean senseInProgress = false;
   private static boolean syncInProgress = false;
-  private static boolean swUpdateInProgress = false;
+  private static boolean checkForSwUpdatesInProgress = false;
   
   public enum PlatysTask {
     PLATYS_TASK_SENSE (PlatysReceiver.ACTION_SENSE),
@@ -120,8 +120,8 @@ public class PlatysService extends Service {
 
     switch (platysTask) {
     case PLATYS_TASK_CHECK_SW_UPDATES:
-      if (!swUpdateInProgress) {
-        swUpdateInProgress = true;
+      if (!checkForSwUpdatesInProgress) {
+        checkForSwUpdatesInProgress = true;
         startTaskInParallel(platysTask, intent);
       }
       break;
@@ -238,7 +238,7 @@ public class PlatysService extends Service {
       case PLATYS_TASK_CHECK_SW_UPDATES:
         Log.i(TAG, "Software update finished.");
         runningParallelTasksMap.remove(msgFromTask);
-        swUpdateInProgress = false;
+        checkForSwUpdatesInProgress = false;
         break;
 
       case PLATYS_TASK_SAVE_LABELS:
@@ -262,7 +262,7 @@ public class PlatysService extends Service {
         break;
       }
 
-      if (!pendingSequentialTaskIntents.isEmpty()) {
+      if (runningSequentialTaskThread == null && !pendingSequentialTaskIntents.isEmpty()) {
         Intent nextIntent = pendingSequentialTaskIntents.remove(0);
         String taskStr = nextIntent.getAction();
         PlatysTask platysTask = PlatysTask.fromString(taskStr);
@@ -287,7 +287,7 @@ public class PlatysService extends Service {
     
     senseInProgress = false;
     syncInProgress = false;
-    swUpdateInProgress = false;
+    checkForSwUpdatesInProgress = false;
     
     if (lock.isHeld()) {
       Log.i(TAG, "Releasing lock");
