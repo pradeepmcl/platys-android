@@ -12,31 +12,30 @@ import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
 import edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity;
-import edu.ncsu.mas.platys.common.constasnts.PlatysSensorType;
-import edu.ncsu.mas.platys.common.sensordata.PlatysInstanceInfo;
+import edu.ncsu.mas.platys.common.sensor.PlatysCommonSensor;
+import edu.ncsu.mas.platys.common.sensor.PlatysInstanceInfo;
 
 public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
 
   private static final String DATABASE_NAME = "sensor.db";
 
   private static final int DATABASE_VERSION = 1;
-  
+
   private final Context mContext;
 
   public SensorDbHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
-    
+
     mContext = context;
   }
 
   @Override
   public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
     try {
-      for (PlatysSensorType sensor : PlatysSensorType.values()) {
+      addInstanceInfo(connectionSource);
+      for (PlatysCommonSensor sensor : PlatysCommonSensor.values()) {
         TableUtils.createTableIfNotExists(connectionSource, sensor.getDataClass());
       }
-
-      addInstanceInfo();
     } catch (SQLException e) {
       Log.e(SensorDbHelper.class.getName(), "Can't create database", e);
       throw new RuntimeException(e);
@@ -54,9 +53,9 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
     super.close();
   }
 
-  private void addInstanceInfo() throws SQLException {
-    Dao<PlatysInstanceInfo, ?> instanceInfoDao = getDao(PlatysSensorType.PLATYS_INSTANCE_INFO
-        .getDataClass());
+  private void addInstanceInfo(ConnectionSource connectionSource) throws SQLException {
+    Dao<PlatysInstanceInfo, ?> instanceInfoDao = getDao(PlatysInstanceInfo.class);
+    TableUtils.createTableIfNotExists(connectionSource, PlatysInstanceInfo.class);
     if (instanceInfoDao.countOf() == 0) {
       PlatysInstanceInfo instanceInfo = new PlatysInstanceInfo();
       instanceInfo.setCreationTime(System.currentTimeMillis());

@@ -16,9 +16,9 @@ import com.j256.ormlite.dao.Dao;
 
 import edu.ncsu.mas.platys.android.sensor.PlatysSensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
-import edu.ncsu.mas.platys.common.constasnts.PlatysSensorType;
-import edu.ncsu.mas.platys.common.sensordata.AccelerometerData;
-import edu.ncsu.mas.platys.common.sensordata.SensorData;
+import edu.ncsu.mas.platys.common.sensor.PlatysCommonSensor;
+import edu.ncsu.mas.platys.common.sensor.datatypes.AccelerometerData;
+import edu.ncsu.mas.platys.common.sensor.datatypes.SensorData;
 
 public class AccelerometerSensor implements PlatysSensor {
   private static final String TAG = "Platys" + AccelerometerSensor.class.getSimpleName();
@@ -114,7 +114,7 @@ public class AccelerometerSensor implements PlatysSensor {
       try {
         if (mAccelerometerDao == null) {
           mAccelerometerDao = mDbHelper
-              .getDao(PlatysSensorType.ACCELEROMETER_SENSOR.getDataClass());
+              .getDao(PlatysCommonSensor.ACCELEROMETER_SENSOR.getDataClass());
         }
         mAccelerometerDao.create(accData);
       } catch (SQLException e) {

@@ -17,7 +17,7 @@ import edu.ncsu.mas.platys.android.ui.fragment.AppsFragment;
 import edu.ncsu.mas.platys.android.ui.fragment.PlacesFragment;
 import edu.ncsu.mas.platys.android.ui.fragment.SensorsFragment;
 import edu.ncsu.mas.platys.android.ui.fragment.TimePickerFragment.OnTimeSetPlatysListener;
-import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData;
+import edu.ncsu.mas.platys.common.sensor.datatypes.PlaceLabelData;
 
 public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
     SuggestionClickListener {

@@ -25,8 +25,8 @@ import com.dropbox.client2.session.AppKeyPair;
 import com.dropbox.client2.session.Session.AccessType;
 
 import edu.ncsu.mas.platys.android.R;
-import edu.ncsu.mas.platys.common.sensordata.PlatysInstanceInfo.ServerType;
 import edu.ncsu.mas.platys.common.constasnts.SyncConstants;
+import edu.ncsu.mas.platys.common.sensor.PlatysInstanceInfo.ServerType;
 
 public class ServerModeChooserActivity extends Activity {
 
@@ -92,7 +92,7 @@ public class ServerModeChooserActivity extends Activity {
         }
       }
     });
-    
+
     // Enable default option
     RadioButton sharableDbxFolderRb = (RadioButton) findViewById(
         R.id.rbDbxSharableFolderModeServerModeChooser);

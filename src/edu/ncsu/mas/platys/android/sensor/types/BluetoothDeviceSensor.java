@@ -16,9 +16,9 @@ import com.j256.ormlite.dao.Dao;
 
 import edu.ncsu.mas.platys.android.sensor.PlatysSensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
-import edu.ncsu.mas.platys.common.constasnts.PlatysSensorType;
-import edu.ncsu.mas.platys.common.sensordata.BluetoothDeviceData;
-import edu.ncsu.mas.platys.common.sensordata.SensorData;
+import edu.ncsu.mas.platys.common.sensor.PlatysCommonSensor;
+import edu.ncsu.mas.platys.common.sensor.datatypes.BluetoothDeviceData;
+import edu.ncsu.mas.platys.common.sensor.datatypes.SensorData;
 
 public class BluetoothDeviceSensor implements PlatysSensor {
 
@@ -103,7 +103,7 @@ public class BluetoothDeviceSensor implements PlatysSensor {
       btDeviceData.setRssi(devRssi);
       try {
         if (mBtDao == null) {
-          mBtDao = mDbHelper.getDao(PlatysSensorType.BLUETOOTH_DEVICE_SENSOR.getDataClass());
+          mBtDao = mDbHelper.getDao(PlatysCommonSensor.BLUETOOTH_DEVICE_SENSOR.getDataClass());
         }
         mBtDao.create(btDeviceData);
       } catch (SQLException e) {

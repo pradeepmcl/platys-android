@@ -26,8 +26,8 @@ import android.widget.ListView;
 import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.R;
 import edu.ncsu.mas.platys.android.ui.adapter.PlaceSuggestionArrayAdapter;
-import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData;
-import edu.ncsu.mas.platys.common.sensordata.PlaceLabelData.LabelType;
+import edu.ncsu.mas.platys.common.sensor.datatypes.PlaceLabelData;
+import edu.ncsu.mas.platys.common.sensor.datatypes.PlaceLabelData.LabelType;
 
 public class PlacesFragment extends Fragment {
 

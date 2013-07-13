@@ -19,9 +19,9 @@ import com.j256.ormlite.dao.Dao;
 
 import edu.ncsu.mas.platys.android.sensor.PlatysSensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
-import edu.ncsu.mas.platys.common.constasnts.PlatysSensorType;
-import edu.ncsu.mas.platys.common.sensordata.SensorData;
-import edu.ncsu.mas.platys.common.sensordata.WifiAccessPointData;
+import edu.ncsu.mas.platys.common.sensor.PlatysCommonSensor;
+import edu.ncsu.mas.platys.common.sensor.datatypes.SensorData;
+import edu.ncsu.mas.platys.common.sensor.datatypes.WifiAccessPointData;
 
 public class WiFiAccessPointSensor implements PlatysSensor {
 
@@ -95,7 +95,7 @@ public class WiFiAccessPointSensor implements PlatysSensor {
       final WifiInfo connectedAp = mWifiMgr.getConnectionInfo();
       try {
         final Dao<SensorData, ?> sensorDao = mDbHelper
-            .getDao(PlatysSensorType.WIFI_ACCESS_POINT_SENSOR.getDataClass());
+            .getDao(PlatysCommonSensor.WIFI_ACCESS_POINT_SENSOR.getDataClass());
 
         // TODO Find out if bulk insert is worth for few inserts.
         sensorDao.callBatchTasks(new Callable<Void>() {
