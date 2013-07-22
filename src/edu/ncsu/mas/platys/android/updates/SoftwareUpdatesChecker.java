@@ -21,10 +21,11 @@ import android.os.Message;
 import android.util.Log;
 import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
+import edu.ncsu.mas.platys.android.PlatysTaskHandler;
 import edu.ncsu.mas.platys.android.R;
 import edu.ncsu.mas.platys.android.ui.SoftwareUpdaterActivity;
 
-public class SoftwareUpdatesChecker implements Runnable {
+public class SoftwareUpdatesChecker implements Runnable, PlatysTaskHandler {
   private static final String TAG = "Platys" + SoftwareUpdatesChecker.class.getSimpleName();
 
   public static final String SOFTWARE_UPDATE_URL = "http://platys.csc.ncsu.edu/platys/resources/PlatysAndroid.apk";
@@ -34,10 +35,18 @@ public class SoftwareUpdatesChecker implements Runnable {
   private final Context mContext;
   private final Handler mServiceHandler;
 
+  private Thread mUpdateCheckerThread = null;
+
   public SoftwareUpdatesChecker(Context context, Handler serviceHandler) {
     Log.i(TAG, "Creating SoftwareUpdater.");
     mContext = context;
     mServiceHandler = serviceHandler;
+  }
+
+  @Override
+  public void startTask() {
+    mUpdateCheckerThread = new Thread(this);
+    mUpdateCheckerThread.start();
   }
 
   @Override
@@ -74,7 +83,7 @@ public class SoftwareUpdatesChecker implements Runnable {
       scheduleNext();
 
       Message msgToService = mServiceHandler
-          .obtainMessage(PlatysTask.PLATYS_TASK_CHECK_SW_UPDATES.ordinal());
+          .obtainMessage(PlatysTask.CHECK_FOR_SW_UPDATES.ordinal());
       msgToService.arg1 = updateStatus;
       msgToService.sendToTarget();
     }
@@ -106,6 +115,12 @@ public class SoftwareUpdatesChecker implements Runnable {
     Intent intentToSchedule = new Intent(mContext.getApplicationContext(), PlatysReceiver.class);
     intentToSchedule.setAction(PlatysReceiver.ACTION_SAVE_LABELS);
     PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, CHECK_FREQUENCY);
+  }
+
+  @Override
+  public void stopTask() {
+    // TODO Auto-generated method stub
+
   }
 
 }

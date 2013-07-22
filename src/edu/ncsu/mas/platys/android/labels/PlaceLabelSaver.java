@@ -13,6 +13,7 @@ import com.j256.ormlite.dao.Dao;
 
 import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
+import edu.ncsu.mas.platys.android.PlatysTaskHandler;
 import edu.ncsu.mas.platys.android.sensor.PlatysSensor.SensorMsg;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.common.sensor.PlatysCommonSensor;
@@ -20,18 +21,26 @@ import edu.ncsu.mas.platys.common.sensor.datatypes.PlaceLabelData;
 import edu.ncsu.mas.platys.common.sensor.datatypes.PlaceLabelData.LabelType;
 import edu.ncsu.mas.platys.common.sensor.datatypes.SensorData;
 
-public class PlaceLabelSaver implements Runnable {
+public class PlaceLabelSaver implements Runnable, PlatysTaskHandler {
   private static final String TAG = "Platys" + PlaceLabelSaver.class.getSimpleName();
 
   private final Handler mServiceHandler;
   private final SensorDbHelper mSensorDbHelper;
   private final Intent mDetailsIntent;
 
+  private Thread mLabelSaverThread = null;
+
   public PlaceLabelSaver(Handler serviceHandler, SensorDbHelper sensorDbHelper, Intent intent) {
     Log.i(TAG, "Creating PlaceLabelSaver.");
     mServiceHandler = serviceHandler;
     mSensorDbHelper = sensorDbHelper;
     mDetailsIntent = intent;
+  }
+
+  @Override
+  public void startTask() {
+    mLabelSaverThread = new Thread(this);
+    mLabelSaverThread.start();
   }
 
   @Override
@@ -74,10 +83,16 @@ public class PlaceLabelSaver implements Runnable {
       result = SensorMsg.SENSING_FAILED.ordinal();
       Log.e(TAG, "Unknown error", e);
     } finally {
-      Message msgToService = mServiceHandler.obtainMessage(PlatysTask.PLATYS_TASK_SAVE_LABELS
+      Message msgToService = mServiceHandler.obtainMessage(PlatysTask.SAVE_LABELS
           .ordinal());
       msgToService.arg1 = result;
       msgToService.sendToTarget();
     }
+  }
+
+  @Override
+  public void stopTask() {
+    // TODO Auto-generated method stub
+
   }
 }

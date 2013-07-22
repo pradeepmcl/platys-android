@@ -1,8 +1,7 @@
 package edu.ncsu.mas.platys.android;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import android.app.Service;
@@ -28,61 +27,26 @@ public class PlatysService extends Service {
 
   private static final String TAG = PlatysService.class.getSimpleName();
 
-  private static boolean senseInProgress = false;
-  private static boolean syncInProgress = false;
-  private static boolean checkForSwUpdatesInProgress = false;
-  
-  public enum PlatysTask {
-    PLATYS_TASK_SENSE (PlatysReceiver.ACTION_SENSE),
-    PLATYS_TASK_SYNC (PlatysReceiver.ACTION_SYNC),
-    PLATYS_TASK_SAVE_LABELS (PlatysReceiver.ACTION_SAVE_LABELS),
-    PLATYS_TASK_CHECK_SW_UPDATES (PlatysReceiver.ACTION_CHECK_SW_UPDATE),
-    PLATYS_TASK_UPDATE_SW (PlatysReceiver.ACTION_UPDATE_SW),
-    PLATYS_TASK_SYNC_AND_UPDATE_SW (PlatysReceiver.ACTION_SYNC_AND_UPDATE_SW),
-    UNKNOWN_TASK ("Unknown_Task");
+  // Don't know the significance!
+  private static final String WAKE_LOCK_NAME = PlatysService.class.getName();
 
-    String mValue;
+  private static volatile PowerManager.WakeLock mWakelock = null;
 
-    PlatysTask(String value) {
-      mValue = value;
-    }
-
-    @Override
-    public String toString() {
-      return mValue;
-    }
-
-    public static PlatysTask fromString(String value) {
-      for (PlatysTask task : PlatysTask.values()) {
-        if (task.toString().equalsIgnoreCase(value)) {
-          return task;
-        }
-      }
-      // throw new IllegalArgumentException();
-      return UNKNOWN_TASK;
-    }
-  }
-
-  private static final String LOCK_NAME_STATIC = "edu.ncsu.mas.platys.android.PlatysService";
-
-  private static volatile PowerManager.WakeLock lockStatic = null;
+  private final Map<PlatysTask, Intent> pendingTasks = new LinkedHashMap<PlatysTask, Intent>();
+  private final Map<PlatysTask, PlatysTaskHandler> runningTasks = new HashMap<PlatysTask, PlatysTaskHandler>();
 
   private Handler mServiceHandler = null;
   private SensorDbHelper mSensorDbHelper = null;
 
-  private Thread runningSequentialTaskThread = null;
-  private final List<Intent> pendingSequentialTaskIntents = new LinkedList<Intent>();
-  private final Map<PlatysTask, Thread> runningParallelTasksMap = new HashMap<PlatysTask, Thread>();
-
   synchronized private static PowerManager.WakeLock getLock(Context context) {
-    if (lockStatic == null) {
+    if (mWakelock == null) {
       PowerManager mgr = (PowerManager) context.getApplicationContext().getSystemService(
           Context.POWER_SERVICE);
-      lockStatic = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, LOCK_NAME_STATIC);
-      lockStatic.setReferenceCounted(true);
+      mWakelock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_NAME);
+      mWakelock.setReferenceCounted(false);
     }
 
-    return lockStatic;
+    return mWakelock;
   }
 
   public static void startWakefulAction(Context context, Intent intent) {
@@ -107,173 +71,128 @@ public class PlatysService extends Service {
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     if (intent != null) {
-      Log.i(TAG, "Starting PlatysSerice for action: " + intent.getAction());
-      startTask(intent);
+      String task = intent.getAction();
+
+      if (!runningTasks.containsKey(task) && !pendingTasks.containsKey(task)) {
+        Log.i(TAG, "Starting PlatysSerice for action: " + task);
+
+        if (pendingTasks.isEmpty() && !runningTasks.containsKey(PlatysTask.SENSE)
+            && !runningTasks.containsKey(PlatysTask.SYNC)
+            && !runningTasks.containsKey(PlatysTask.SAVE_LABELS)) {
+          if (task.equals(PlatysReceiver.ACTION_SENSE)) {
+            startTask(PlatysTask.SENSE, intent);
+          } else if (task.equals(PlatysReceiver.ACTION_SYNC)) {
+            startTask(PlatysTask.SYNC, intent);
+          } else if (task.equals(PlatysReceiver.ACTION_SAVE_LABELS)) {
+            startTask(PlatysTask.SAVE_LABELS, intent);
+          }
+        } else {
+          if (task.equals(PlatysReceiver.ACTION_SENSE)) {
+            pendingTasks.put(PlatysTask.SENSE, intent);
+          } else if (task.equals(PlatysReceiver.ACTION_SYNC)) {
+            pendingTasks.put(PlatysTask.SYNC, intent);
+          } else if (task.equals(PlatysReceiver.ACTION_SAVE_LABELS)) {
+            pendingTasks.put(PlatysTask.SAVE_LABELS, intent);
+          }
+        }
+
+        if (task.equals(PlatysReceiver.ACTION_CHECK_FOR_SW_UPDATE)) {
+          startTask(PlatysTask.CHECK_FOR_SW_UPDATES, intent);
+        } else if (task.equals(PlatysReceiver.ACTION_UPDATE_SW)) {
+          pendingTasks.clear();
+          for (PlatysTask runningTask : runningTasks.keySet()) {
+            runningTasks.get(runningTask).stopTask();
+          }
+          Intent syncIntent = new Intent(intent);
+          syncIntent.setAction(PlatysReceiver.ACTION_SYNC);
+          startTask(PlatysTask.SYNC, syncIntent);
+          pendingTasks.put(PlatysTask.UPDATE_SW, intent);
+        }
+
+      }
     }
 
     return START_REDELIVER_INTENT;
   }
 
-  private void startTask(Intent intent) {
-    String taskStr = intent.getAction();
-    PlatysTask platysTask = PlatysTask.fromString(taskStr);
+  public enum PlatysTask {
+    SENSE, SYNC, SAVE_LABELS, CHECK_FOR_SW_UPDATES, UPDATE_SW
+  }
 
-    switch (platysTask) {
-    case PLATYS_TASK_CHECK_SW_UPDATES:
-      if (!checkForSwUpdatesInProgress) {
-        checkForSwUpdatesInProgress = true;
-        startTaskInParallel(platysTask, intent);
-      }
+  private void startTask(PlatysTask task, Intent intent) {
+    if (mSensorDbHelper == null || !mSensorDbHelper.isOpen()) {
+      mSensorDbHelper = OpenHelperManager.getHelper(getApplicationContext(), SensorDbHelper.class);
+    }
+
+    PlatysTaskHandler platysThread = null;
+    switch (task) {
+    case SENSE:
+      platysThread = new SensorPoller(getApplicationContext(), mServiceHandler, mSensorDbHelper,
+          SensorEnum.values());
       break;
-    case PLATYS_TASK_UPDATE_SW:
-      startTaskInSequence(platysTask, intent);
+    case SYNC:
+      platysThread = new DbxCoreApiSyncer(getApplicationContext(), mServiceHandler,
+          OpenHelperManager.getHelper(getApplicationContext(), SensorDbHelper.class));
       break;
-    case PLATYS_TASK_SAVE_LABELS:
-      startTaskInSequence(platysTask, intent);
+    case SAVE_LABELS:
+      platysThread = new PlaceLabelSaver(mServiceHandler, mSensorDbHelper, intent);
       break;
-    case PLATYS_TASK_SENSE:
-      if (!senseInProgress) {
-        senseInProgress = true;
-        startTaskInSequence(platysTask, intent);
-      }
+    case CHECK_FOR_SW_UPDATES:
+      platysThread = new SoftwareUpdatesChecker(getApplicationContext(), mServiceHandler);
       break;
-    case PLATYS_TASK_SYNC:
-      if (!syncInProgress) {
-        syncInProgress = true;
-        startTaskInSequence(platysTask, intent);
-      }
-      break;
-    case PLATYS_TASK_SYNC_AND_UPDATE_SW:
-      Intent syncIntent = new Intent(intent);
-      syncIntent.setAction(PlatysReceiver.ACTION_SYNC);
-      startTask(syncIntent);
-      
-      Intent updateSwIntent = new Intent(intent);
-      updateSwIntent.setAction(PlatysReceiver.ACTION_UPDATE_SW);
-      startTask(updateSwIntent);      
+    case UPDATE_SW:
+      Intent updateIntent = new Intent(Intent.ACTION_VIEW,
+          Uri.parse(SoftwareUpdatesChecker.SOFTWARE_UPDATE_URL));
+      updateIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      getApplication().startActivity(updateIntent);
       break;
     default:
       break;
     }
-  }
 
-  private void startTaskInParallel(PlatysTask platysTask, Intent intent) {
-    PowerManager.WakeLock lock = getLock(this.getApplicationContext());
-    if (!lock.isHeld()) { // ( && flags & START_FLAG_REDELIVERY) != 0
-      lock.acquire();
-      Log.i(TAG, "Acquired lock");
-    }
-
-    switch (platysTask) {
-    case PLATYS_TASK_CHECK_SW_UPDATES:
-      Log.i(TAG, "Perform Platys software update action.");
-      runningParallelTasksMap.put(platysTask, new Thread(new SoftwareUpdatesChecker(
-          getApplicationContext(), mServiceHandler)));
-      runningParallelTasksMap.get(platysTask).start();
-      break;
-
-    default: // This should never happen
-      break;
-    }
-  }
-
-  private void startTaskInSequence(PlatysTask platysTask, Intent intent) {
-    if (runningSequentialTaskThread == null) {
-      PowerManager.WakeLock lock = getLock(this.getApplicationContext());
-      if (!lock.isHeld()) { // ( && flags & START_FLAG_REDELIVERY) != 0
-        lock.acquire();
-        Log.i(TAG, "Acquired lock");
-      }
-
-      if (mSensorDbHelper == null || !mSensorDbHelper.isOpen()) {
-        mSensorDbHelper = OpenHelperManager
-            .getHelper(getApplicationContext(), SensorDbHelper.class);
-      }
-
-      switch (platysTask) {
-      case PLATYS_TASK_SAVE_LABELS:
-        Log.i(TAG, "Perform Platys save labels action.");
-        runningSequentialTaskThread = new Thread(new PlaceLabelSaver(mServiceHandler,
-            mSensorDbHelper, intent));
-        runningSequentialTaskThread.start();
-        break;
-
-      case PLATYS_TASK_SENSE:
-        Log.i(TAG, "Perform Platys sense action.");
-        runningSequentialTaskThread = new SensorPoller(getApplicationContext(), mServiceHandler,
-            mSensorDbHelper, SensorEnum.values());
-        runningSequentialTaskThread.start();
-        break;
-
-      case PLATYS_TASK_SYNC:
-        Log.i(TAG, "Perform Platys sync action.");
-        runningSequentialTaskThread = new Thread(new DbxCoreApiSyncer(getApplicationContext(),
-            mServiceHandler, OpenHelperManager.getHelper(getApplicationContext(),
-                SensorDbHelper.class)));
-        runningSequentialTaskThread.start();
-        break;
-        
-      case PLATYS_TASK_UPDATE_SW:
-        Intent updateIntent = new Intent(Intent.ACTION_VIEW,
-            Uri.parse(SoftwareUpdatesChecker.SOFTWARE_UPDATE_URL));
-        startActivity(updateIntent);
-        break;
-
-      default: // This should never happen
-        break;
-      }
-
-    } else {
-      pendingSequentialTaskIntents.add(intent);
+    if (platysThread != null) {
+      runningTasks.put(task, platysThread);
+      platysThread.startTask();
     }
   }
 
   private final class PlatysServiceHandler extends Handler {
     @Override
     public void handleMessage(Message msg) {
-      Log.i(TAG, "Received message " + msg.arg1);
+      PlatysTask finishedTask = PlatysTask.values()[msg.what];
+      Log.i(TAG, "Received message from " + finishedTask);
 
-      PlatysTask msgFromTask = PlatysTask.values()[msg.what];
-      switch (msgFromTask) {
-      case PLATYS_TASK_CHECK_SW_UPDATES:
-        Log.i(TAG, "Software update finished.");
-        runningParallelTasksMap.remove(msgFromTask);
-        checkForSwUpdatesInProgress = false;
+      switch (finishedTask) {
+      case SENSE:
         break;
-
-      case PLATYS_TASK_SAVE_LABELS:
-        Log.i(TAG, "LabelSaver finished.");
-        runningSequentialTaskThread = null;
-        break;
-
-      case PLATYS_TASK_SENSE:
-        Log.i(TAG, "SensorPoller finished.");
-        runningSequentialTaskThread = null;
-        senseInProgress = false;
-        break;
-
-      case PLATYS_TASK_SYNC:
-        Log.i(TAG, "SyncHandler finished.");
+      case SYNC:
         OpenHelperManager.releaseHelper();
-        runningSequentialTaskThread = null;
-        syncInProgress = false;
+        break;
+      case SAVE_LABELS:
+        break;
+      case CHECK_FOR_SW_UPDATES:
         break;
       default:
         break;
       }
 
-      if (runningSequentialTaskThread == null && !pendingSequentialTaskIntents.isEmpty()) {
-        Intent nextIntent = pendingSequentialTaskIntents.remove(0);
-        String taskStr = nextIntent.getAction();
-        PlatysTask platysTask = PlatysTask.fromString(taskStr);
-        startTaskInSequence(platysTask, nextIntent);
-      } else {
-        if (runningSequentialTaskThread != null || !runningParallelTasksMap.isEmpty()) {
-          // Wait for running tasks to finish.
-          Log.i(TAG, "Waiting for running tasks to finish");
+      runningTasks.remove(finishedTask);
+
+      if (pendingTasks.isEmpty() && runningTasks.isEmpty()) {
+        Log.i(TAG, "No more tasks to run");
+        PlatysService.this.stopSelf();
+      } else if (!pendingTasks.isEmpty()) {
+        if (runningTasks.containsKey(PlatysTask.SENSE) || runningTasks.containsKey(PlatysTask.SYNC)
+            || runningTasks.containsKey(PlatysTask.SAVE_LABELS)) {
+          Log.i(TAG, "Wait for a sequential task to finish");
         } else {
-          PlatysService.this.stopSelf();
+          PlatysTask nextTask = pendingTasks.keySet().iterator().next();
+          Intent nextIntent = pendingTasks.get(nextTask);
+          pendingTasks.remove(nextTask);
+          startTask(nextTask, nextIntent);
         }
+      } else {
+        Log.i(TAG, "Wait for a task to finish");
       }
     }
   }
@@ -282,17 +201,24 @@ public class PlatysService extends Service {
   public void onDestroy() {
     super.onDestroy();
     Log.i(TAG, "Destroying the service");
+
+    for (PlatysTaskHandler taskHandler : runningTasks.values()) {
+      taskHandler.stopTask();
+    }
+    runningTasks.clear();
+    pendingTasks.clear();
+
     OpenHelperManager.releaseHelper();
+    mSensorDbHelper = null;
+
     PowerManager.WakeLock lock = getLock(getApplicationContext());
-    
-    senseInProgress = false;
-    syncInProgress = false;
-    checkForSwUpdatesInProgress = false;
-    
+
     if (lock.isHeld()) {
       Log.i(TAG, "Releasing lock");
       lock.release();
     }
+
+    mWakelock = null;
   }
 
 }

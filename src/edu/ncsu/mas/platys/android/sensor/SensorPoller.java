@@ -10,13 +10,14 @@ import android.os.Message;
 import android.util.Log;
 import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
+import edu.ncsu.mas.platys.android.PlatysTaskHandler;
 import edu.ncsu.mas.platys.android.sensor.PlatysSensor.SensorMsg;
 import edu.ncsu.mas.platys.android.sensor.types.AccelerometerSensor;
 import edu.ncsu.mas.platys.android.sensor.types.BluetoothDeviceSensor;
 import edu.ncsu.mas.platys.android.sensor.types.GpsSensor;
 import edu.ncsu.mas.platys.android.sensor.types.WiFiAccessPointSensor;
 
-public class SensorPoller extends HandlerThread {
+public class SensorPoller extends HandlerThread implements PlatysTaskHandler {
 
   private static final String TAG = "Platys" + SensorPoller.class.getSimpleName();
   private static final String HANDLER_THREAD_NAME = SensorPoller.class.getName();
@@ -92,6 +93,11 @@ public class SensorPoller extends HandlerThread {
   };
 
   @Override
+  public void startTask() {
+    this.start();
+  }
+
+  @Override
   protected void onLooperPrepared() {
     Log.i(TAG, "Preparing SensorPoller Looper");
 
@@ -138,7 +144,7 @@ public class SensorPoller extends HandlerThread {
   protected void onPostExecute() {
     scheduleNext();
 
-    Message msgToService = mServiceHandler.obtainMessage(PlatysTask.PLATYS_TASK_SENSE.ordinal());
+    Message msgToService = mServiceHandler.obtainMessage(PlatysTask.SENSE.ordinal());
     msgToService.arg1 = SensorMsg.SENSING_SUCCEEDED.ordinal();
     msgToService.sendToTarget();
   }
@@ -159,6 +165,19 @@ public class SensorPoller extends HandlerThread {
     return longestTimeoutValue;*/
 
     return DEFAULT_TIMEOUT; // For testing.
+  }
+
+  @Override
+  public void stopTask() {
+    for (int i = 0; i < mSensorList.length; i++) {
+      if (mSensorFinishedList[i] == false) {
+        mSensorList[i].stopSensor();
+      }
+    }
+
+    mSensorResponseHandler.removeCallbacks(mOnSensorTimeout);
+
+    quit();
   }
 
 }

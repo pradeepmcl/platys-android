@@ -14,6 +14,7 @@ import com.j256.ormlite.table.TableUtils;
 import edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity;
 import edu.ncsu.mas.platys.common.sensor.PlatysCommonSensor;
 import edu.ncsu.mas.platys.common.sensor.PlatysInstanceInfo;
+import edu.ncsu.mas.platys.common.sensor.PlatysInstanceInfo.ServerType;
 
 public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
 
@@ -56,11 +57,17 @@ public class SensorDbHelper extends OrmLiteSqliteOpenHelper {
   private void addInstanceInfo(ConnectionSource connectionSource) throws SQLException {
     Dao<PlatysInstanceInfo, ?> instanceInfoDao = getDao(PlatysInstanceInfo.class);
     TableUtils.createTableIfNotExists(connectionSource, PlatysInstanceInfo.class);
-    if (instanceInfoDao.countOf() == 0) {
+
+    ServerType serverType = ServerModeChooserActivity.getServerMode(mContext);
+    String userId = ServerModeChooserActivity.getUserId(mContext);
+
+    if (instanceInfoDao.countOf(instanceInfoDao.queryBuilder().setCountOf(true).where()
+        .eq(PlatysInstanceInfo.SERVER_TYPE_CLM, serverType).and()
+        .eq(PlatysInstanceInfo.USER_ID_CLM, userId).prepare()) == 0) {
       PlatysInstanceInfo instanceInfo = new PlatysInstanceInfo();
       instanceInfo.setCreationTime(System.currentTimeMillis());
-      instanceInfo.setServerType(ServerModeChooserActivity.getServerMode(mContext));
-      instanceInfo.setUserId(ServerModeChooserActivity.getUserId(mContext));
+      instanceInfo.setServerType(serverType);
+      instanceInfo.setUserId(userId);
       instanceInfo.setUserDetails("Displayname:" + ServerModeChooserActivity.getUsername(mContext));
       instanceInfoDao.create(instanceInfo);
     }

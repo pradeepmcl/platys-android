@@ -26,7 +26,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="edu.ncsu.mas.platys.android.ui.PlatysActivity"
+            android:name=".ui.PlatysActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,10 +36,8 @@
         </activity>
 
         <service
-            android:name="edu.ncsu.mas.platys.android.PlatysService"
+            android:name="PlatysService"
             android:process=":PlatysService" />
-
-        <activity android:name="com.dropbox.sync.android.DbxAuthActivity" />
         <activity
             android:name="com.dropbox.client2.android.AuthActivity"
             android:launchMode="singleTask" >
@@ -61,7 +59,7 @@
             android:label="Dropbox Sync" />
         -->
 
-        <receiver android:name="edu.ncsu.mas.platys.android.PlatysReceiver" >
+        <receiver android:name="PlatysReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="platys.intent.action.START_SENSING" />
@@ -69,14 +67,10 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name="edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity" >
+        <activity android:name=".ui.ServerModeChooserActivity" >
         </activity>
         <activity
-            android:name="edu.ncsu.mas.platys.android.ui.DbxModeChooserActivity"
-            android:label="@string/title_activity_dbx_mode_chooser" >
-        </activity>
-        <activity
-            android:name="edu.ncsu.mas.platys.android.SoftwareUpdaterActivity"
+            android:name=".ui.SoftwareUpdaterActivity"
             android:label="@string/title_activity_software_updater" >
         </activity>
     </application>

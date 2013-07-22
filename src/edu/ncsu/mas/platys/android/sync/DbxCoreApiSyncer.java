@@ -19,10 +19,11 @@ import com.dropbox.client2.exception.DropboxException;
 
 import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
+import edu.ncsu.mas.platys.android.PlatysTaskHandler;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity;
 
-public class DbxCoreApiSyncer implements Runnable {
+public class DbxCoreApiSyncer implements Runnable, PlatysTaskHandler {
   private static final String TAG = "Platys" + DbxCoreApiSyncer.class.getSimpleName();
 
   private static final String SENSOR_SYNC_DIR_PATH = "/PlatysApp/SensorData/";
@@ -33,11 +34,19 @@ public class DbxCoreApiSyncer implements Runnable {
   private final Handler mServiceHandler;
   private final SensorDbHelper mSensorDbHelper;
 
+  private Thread mSyncerThread = null;
+
   public DbxCoreApiSyncer(Context context, Handler serviceHandler, SensorDbHelper sensorDbHelper) {
     Log.i(TAG, "Creating SyncHandler.");
     mContext = context;
     mServiceHandler = serviceHandler;
     mSensorDbHelper = sensorDbHelper;
+  }
+
+  @Override
+  public void startTask() {
+    mSyncerThread = new Thread(this);
+    mSyncerThread.start();
   }
 
   @Override
@@ -78,7 +87,7 @@ public class DbxCoreApiSyncer implements Runnable {
 
       scheduleNext();
 
-      Message msgToService = mServiceHandler.obtainMessage(PlatysTask.PLATYS_TASK_SYNC.ordinal());
+      Message msgToService = mServiceHandler.obtainMessage(PlatysTask.SYNC.ordinal());
       msgToService.arg1 = syncSuccess;
       msgToService.sendToTarget();
     }
@@ -88,6 +97,12 @@ public class DbxCoreApiSyncer implements Runnable {
     Intent intentToSchedule = new Intent(mContext.getApplicationContext(), PlatysReceiver.class);
     intentToSchedule.setAction(PlatysReceiver.ACTION_SYNC);
     PlatysReceiver.schedulePlatysAction(mContext, intentToSchedule, SYNC_FREQUENCY);
+  }
+
+  @Override
+  public void stopTask() {
+    // TODO Auto-generated method stub
+
   }
 
 }
