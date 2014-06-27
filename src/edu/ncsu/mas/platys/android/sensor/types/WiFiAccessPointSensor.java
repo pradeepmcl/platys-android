@@ -54,7 +54,7 @@ public class WiFiAccessPointSensor implements PlatysSensor {
 
   @Override
   public void startSensor() {
-    if (!mWifiMgr.isWifiEnabled()) {
+    if (mWifiMgr == null || !mWifiMgr.isWifiEnabled()) {
       mMsgToPoller.arg2 = SensorMsg.SENSOR_DISABLED.ordinal();
       mMsgToPoller.sendToTarget();
       return;

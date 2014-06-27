@@ -52,7 +52,7 @@ public class BluetoothDeviceSensor implements PlatysSensor {
 
   @Override
   public void startSensor() {
-    if (!mBluetoothAdapter.isEnabled()) {
+    if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
       mMsgToPoller.arg2 = SensorMsg.SENSOR_DISABLED.ordinal();
       mMsgToPoller.sendToTarget();
       return;

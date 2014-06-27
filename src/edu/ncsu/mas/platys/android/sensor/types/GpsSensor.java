@@ -56,7 +56,7 @@ public class GpsSensor implements PlatysSensor {
 
   @Override
   public void startSensor() {
-    if (!mLocMgr.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+    if (mLocMgr == null || !mLocMgr.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
       mMsgToPoller.arg2 = SensorMsg.SENSOR_DISABLED.ordinal();
       mMsgToPoller.sendToTarget();
       return;
