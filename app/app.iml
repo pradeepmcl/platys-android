@@ -81,7 +81,9 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="httpmime-4.0.3" level="project" />
     <orderEntry type="library" exported="" name="platys-common-v1" level="project" />
+    <orderEntry type="library" exported="" name="httpcore-4.0.1" level="project" />
     <orderEntry type="library" exported="" name="ormlite-core-4.45" level="project" />
+    <orderEntry type="library" exported="" name="apache-mime4j-0.6" level="project" />
     <orderEntry type="library" exported="" name="dropbox-android-sdk-1.5.4" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-20.0.0" level="project" />
     <orderEntry type="library" exported="" name="support-v4-20.0.0" level="project" />
