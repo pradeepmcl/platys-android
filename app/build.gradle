@@ -1,0 +1,28 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 15
+    buildToolsVersion "20.0.0"
+
+    defaultConfig {
+        applicationId "edu.ncsu.mas.platys.android"
+        minSdkVersion 14
+        targetSdkVersion 15
+    }
+
+    buildTypes {
+        release {
+            runProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:20.0.0'
+    compile files('libs/httpmime-4.0.3.jar')
+    compile files('libs/platys-common-v1.jar')
+    compile files('libs/dropbox-android-sdk-1.5.4.jar')
+    compile files('libs/ormlite-android-4.45.jar')
+    compile files('libs/ormlite-core-4.45.jar')
+}
