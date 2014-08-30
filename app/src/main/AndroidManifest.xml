@@ -36,8 +36,9 @@
         </activity>
 
         <service
-            android:name="PlatysService"
+            android:name=".PlatysService"
             android:process=":PlatysService" />
+
         <activity
             android:name="com.dropbox.client2.android.AuthActivity"
             android:launchMode="singleTask" >
@@ -59,7 +60,7 @@
             android:label="Dropbox Sync" />
         -->
 
-        <receiver android:name="PlatysReceiver" >
+        <receiver android:name=".PlatysReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="platys.intent.action.START_SENSING" />
@@ -73,6 +74,12 @@
             android:name=".ui.SoftwareUpdaterActivity"
             android:label="@string/title_activity_software_updater" >
         </activity>
+
+        <service
+            android:name=".app.PlatysAppService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
     </application>
 
 </manifest>
