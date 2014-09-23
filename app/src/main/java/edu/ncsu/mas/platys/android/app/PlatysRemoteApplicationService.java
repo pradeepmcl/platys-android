@@ -4,8 +4,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-public class PlatysAppService extends Service {
-  private final IPlatysAppService.Stub mBinder = new PlatysAppBinder();
+public class PlatysRemoteApplicationService extends Service {
+  private final IPlatysRemoteApplicationService.Stub mBinder = new PlatysRemoteApplicationBinder();
 
   @Override
   public IBinder onBind(Intent intent) {
