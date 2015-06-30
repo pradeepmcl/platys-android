@@ -8,9 +8,9 @@
     <string name="submit">Submit</string>
     <string name="mode_choose">Setup the Platys middleware to run in one of the following modes.</string>
     <string name="activity_server_mode_chooser_dropbox_app_folder">Dropbox App Folder</string>
-    <string name="activity_server_mode_chooser_dropbox_sharable_folder">Dropbox Sharable Folder</string>
-    <string name="activity_server_mode_chooser_dropbox_app_folder_mode_desc">Platys stores all your information in your private Dropbox app folder. The app folder cannot be shared. Thus, this mode requires that you set up the Platys reasoner manually on a machine with Dropbox access.</string>
-    <string name="activity_server_mode_chooser_dropbox_sharable_folder_mode_desc">Platys stores all your information in your private Dropbox folder. In this mode, the Platys folder can be shared with others. Choose this mode if you are participating in Platys evaluation and share the folder with pmuruka@ncsu.edu. You must submit a consent form before choosing this mode.</string>
+    <string name="activity_server_mode_chooser_dropbox_sharable_folder">Dropbox Shareable Folder</string>
+    <string name="activity_server_mode_chooser_dropbox_app_folder_mode_desc">Platys stores all your information in the app folder of your private Dropbox. The app folder cannot be shared. Thus, this mode requires that you set up the Platys reasoner manually on a machine with Dropbox access.</string>
+    <string name="activity_server_mode_chooser_dropbox_sharable_folder_mode_desc">Platys stores all your information in a folder in your private Dropbox. The Platys folder can be shared with others. Choose this mode if you are participating in Platys evaluation and share the folder with pmuruka@ncsu.edu. You must submit a consent form before choosing this mode.</string>
     <string name="next">Next</string>
     <string name="proceed">Proceed</string>
     <string name="add_place_label">Add Place Label</string>
