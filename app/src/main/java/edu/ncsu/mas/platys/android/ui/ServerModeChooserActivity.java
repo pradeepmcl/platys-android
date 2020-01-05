@@ -16,15 +16,14 @@ import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.DropboxAPI.Account;
-import com.dropbox.client2.android.AndroidAuthSession;
-import com.dropbox.client2.exception.DropboxException;
-import com.dropbox.client2.session.AccessTokenPair;
-import com.dropbox.client2.session.AppKeyPair;
-import com.dropbox.client2.session.Session.AccessType;
+import com.dropbox.core.DbxException;
+
+import com.dropbox.core.android.Auth;
+import com.dropbox.core.v2.DbxClientV2;
+import com.dropbox.core.v2.users.FullAccount;
 
 import edu.ncsu.mas.platys.android.R;
+import edu.ncsu.mas.platys.android.network.DbxClientFactory;
 import edu.ncsu.mas.platys.common.constasnts.SyncConstants;
 import edu.ncsu.mas.platys.common.sensor.PlatysInstanceInfo.ServerType;
 
@@ -41,18 +40,19 @@ public class ServerModeChooserActivity extends Activity {
   public static final String PREFS_DBX_ACCESS_TYPE = "dbx_access_type";
   public static final String PREFS_DBX_ACCESS_KEY_NAME = "dbx_access_key_name";
   public static final String PREFS_DBX_ACCESS_KEY_SECRET = "dbx_access_key_secret";
+  public static final String PREFS_DBX_ACCESS_TOKEN = "dbx_access_token";
 
   private static final String TAG = "Platys" + ServerModeChooserActivity.class.getName();
 
   private ServerType mServerMode;
 
-  private AccessType mDbxAccessType;
+//  private AccessType mDbxAccessType;
 
   private RadioGroup mModesRadioGroup;
   private TextView mDropboxDesc;
   private TextView mPlatysServerDesc;
 
-  private DropboxAPI<AndroidAuthSession> mDBApi = null;
+//  private DropboxAPI<AndroidAuthSession> mDBApi = null;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -82,11 +82,11 @@ public class ServerModeChooserActivity extends Activity {
           if (checkedButton.getText().equals(
               getString(R.string.activity_server_mode_chooser_dropbox_app_folder))) {
             mServerMode = ServerType.DROPBOX_APP_FOLDER;
-            mDbxAccessType = AccessType.APP_FOLDER;
+//            mDbxAccessType = AccessType.APP_FOLDER;
           } else if (checkedButton.getText().equals(
               getString(R.string.activity_server_mode_chooser_dropbox_sharable_folder))) {
             mServerMode = ServerType.DROPBOX_SHAREABLE_FOLDER;
-            mDbxAccessType = AccessType.DROPBOX;
+//            mDbxAccessType = AccessType.DROPBOX;
           }
           setDescriptionViewVisibility(mServerMode, View.VISIBLE);
         }
@@ -136,7 +136,16 @@ public class ServerModeChooserActivity extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
-
+    String accessToken = Auth.getOAuth2Token();
+    if(accessToken != null) {
+       try {
+         DbxClientFactory.init(accessToken);
+         storeServerDetails(accessToken);
+       } catch (IllegalStateException e){
+         Log.i("DbAuthLog", "Error authenticating", e);
+       }
+    }
+/*
     if (mDBApi != null) {
       if (mDBApi.getSession().authenticationSuccessful()) {
         try {
@@ -146,7 +155,7 @@ public class ServerModeChooserActivity extends Activity {
           Log.i("DbAuthLog", "Error authenticating", e);
         }
       }
-    }
+    } */
   }
 
   private void handleServerChoice(ServerType mode) {
@@ -155,11 +164,13 @@ public class ServerModeChooserActivity extends Activity {
       // Continue to DROPBOX_SHAREABLE_FOLDER.
 
     case DROPBOX_SHAREABLE_FOLDER:
+      Auth.startOAuth2Authentication(getApplicationContext(), SyncConstants.getDbxappkey());
+      /*
       AppKeyPair appKeys = new AppKeyPair(SyncConstants.getDbxappkey(),
           SyncConstants.getDbxappsecret());
       AndroidAuthSession session = new AndroidAuthSession(appKeys, mDbxAccessType);
       mDBApi = new DropboxAPI<AndroidAuthSession>(session);
-      mDBApi.getSession().startAuthentication(ServerModeChooserActivity.this);
+      mDBApi.getSession().startAuthentication(ServerModeChooserActivity.this); */
       break;
 
     default:
@@ -167,7 +178,7 @@ public class ServerModeChooserActivity extends Activity {
     }
   }
 
-  private void storeServerDetails() {
+  private void storeServerDetails(String accessToken) {
     SharedPreferences.Editor mPreferencesEditor = getSharedPreferences(PLATYS_SERVER_PREFS,
         Context.MODE_PRIVATE).edit();
     mPreferencesEditor.putString(PREFS_KEY_SERVER_MODE, mServerMode.name());
@@ -177,10 +188,11 @@ public class ServerModeChooserActivity extends Activity {
       // Continue to DROPBOX_SHAREABLE_FOLDER
 
     case DROPBOX_SHAREABLE_FOLDER:
-      mPreferencesEditor.putString(PREFS_DBX_ACCESS_TYPE, mDbxAccessType.name());
-      AccessTokenPair tokens = mDBApi.getSession().getAccessTokenPair();
+      /* mPreferencesEditor.putString(PREFS_DBX_ACCESS_TYPE, mDbxAccessType.name());
+      AccessTokenPair tokens = mDBApi.getClient().getAccessTokenPair();
       mPreferencesEditor.putString(PREFS_DBX_ACCESS_KEY_NAME, tokens.key);
-      mPreferencesEditor.putString(PREFS_DBX_ACCESS_KEY_SECRET, tokens.secret);
+      mPreferencesEditor.putString(PREFS_DBX_ACCESS_KEY_SECRET, tokens.secret); */
+      mPreferencesEditor.putString(PREFS_DBX_ACCESS_TOKEN, accessToken);
       new DbxUserAccountFetcherTask().execute();
       break;
 
@@ -214,6 +226,7 @@ public class ServerModeChooserActivity extends Activity {
     return mPreferences.getString(PREFS_SERVER_USER_NAME, "");
   }
 
+/*
   public static AndroidAuthSession getDbxSession(Context context) {
     AppKeyPair appKeys = new AppKeyPair(SyncConstants.getDbxappkey(),
         SyncConstants.getDbxappsecret());
@@ -240,32 +253,36 @@ public class ServerModeChooserActivity extends Activity {
     String accessSecret = mPreferences.getString(PREFS_DBX_ACCESS_KEY_SECRET, "");
 
     return (new AccessTokenPair(accessKey, accessSecret));
-  }
+  } */
 
-  private class DbxUserAccountFetcherTask extends AsyncTask<Void, Void, Account> {
+  private class DbxUserAccountFetcherTask extends AsyncTask<Void, Void, FullAccount> {
     @Override
     protected void onPreExecute() {
       ServerModeChooserActivity.this.setProgressBarIndeterminateVisibility(true);
     }
 
     @Override
-    protected Account doInBackground(Void... arg0) {
-      Account retAccount = null;
+    protected FullAccount doInBackground(Void... arg0) {
+      FullAccount retAccount = null;
       try {
-        retAccount = mDBApi.accountInfo();
-      } catch (DropboxException e) {
+        //retAccount = mDBApi.accountInfo();
+          DbxClientV2 client = DbxClientFactory.getClient();
+          if(client != null) {
+              retAccount = client.users().getCurrentAccount();
+          }
+      } catch (DbxException e) {
         Log.e(TAG, "Can't fetch account info", e);
       }
       return retAccount;
     }
 
     @Override
-    protected void onPostExecute(Account account) {
+    protected void onPostExecute(FullAccount account) {
       if (account != null) {
         SharedPreferences.Editor mPreferencesEditor = getSharedPreferences(PLATYS_SERVER_PREFS,
             Context.MODE_PRIVATE).edit();
-        mPreferencesEditor.putString(PREFS_SERVER_USER_ID, Long.toString(account.uid));
-        mPreferencesEditor.putString(PREFS_SERVER_USER_NAME, account.displayName);
+        mPreferencesEditor.putString(PREFS_SERVER_USER_ID, account.getAccountId());
+        mPreferencesEditor.putString(PREFS_SERVER_USER_NAME, account.getName().getDisplayName());
         mPreferencesEditor.commit();
 
         ServerModeChooserActivity.this.setProgressBarIndeterminateVisibility(false);

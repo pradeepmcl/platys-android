@@ -5,19 +5,25 @@ import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.Toast;
 import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.R;
+import edu.ncsu.mas.platys.android.network.DbxClientFactory;
 import edu.ncsu.mas.platys.android.ui.adapter.PlaceSuggestionArrayAdapter.SuggestionClickListener;
 import edu.ncsu.mas.platys.android.ui.fragment.AppsFragment;
 import edu.ncsu.mas.platys.android.ui.fragment.PlacesFragment;
 import edu.ncsu.mas.platys.android.ui.fragment.SensorsFragment;
 import edu.ncsu.mas.platys.android.ui.fragment.TimePickerFragment.OnTimeSetPlatysListener;
 import edu.ncsu.mas.platys.common.sensor.datatypes.PlaceLabelData;
+
+import static edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity.PLATYS_SERVER_PREFS;
+import static edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity.PREFS_DBX_ACCESS_TOKEN;
 
 public class PlatysActivity extends Activity implements OnTimeSetPlatysListener,
     SuggestionClickListener {

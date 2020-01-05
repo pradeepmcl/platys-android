@@ -8,20 +8,25 @@ import java.io.InputStream;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.DropboxAPI.Entry;
-import com.dropbox.client2.android.AndroidAuthSession;
-import com.dropbox.client2.exception.DropboxException;
+import com.dropbox.core.DbxException;
+import com.dropbox.core.v2.files.FileMetadata;
+import com.dropbox.core.v2.files.WriteMode;
 
 import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.PlatysService.PlatysTask;
 import edu.ncsu.mas.platys.android.PlatysTaskHandler;
+import edu.ncsu.mas.platys.android.network.DbxClientFactory;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity;
+
+import static edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity.PLATYS_SERVER_PREFS;
+import static edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity.PREFS_DBX_ACCESS_TOKEN;
+import static edu.ncsu.mas.platys.android.ui.ServerModeChooserActivity.PREFS_KEY_SERVER_MODE;
 
 public class DbxCoreApiSyncer implements Runnable, PlatysTaskHandler {
   private static final String TAG = "Platys" + DbxCoreApiSyncer.class.getSimpleName();
@@ -56,21 +61,27 @@ public class DbxCoreApiSyncer implements Runnable, PlatysTaskHandler {
     InputStream sensorDbFileIs = null;
 
     try {
-      DropboxAPI<AndroidAuthSession> dbxApi = new DropboxAPI<AndroidAuthSession>(
-          ServerModeChooserActivity.getDbxSession(mContext));
-      if (dbxApi.getSession().isLinked()) {
+//      DropboxAPI<AndroidAuthSession> dbxApi = new DropboxAPI<AndroidAuthSession>(
+//          ServerModeChooserActivity.getDbxSession(mContext));
+//      if (dbxApi.getSession().isLinked()) {
         final String fileToUpload = SENSOR_SYNC_DIR_PATH + System.currentTimeMillis() + ".db";
         sensorDbFileIs = new FileInputStream(sensorDbFile);
-        Entry newEntry = dbxApi.putFile(fileToUpload, sensorDbFileIs, sensorDbFile.length(), null,
-            null);
-        Log.i(TAG, "Synced file revision: " + newEntry.rev);
+//        Entry newEntry = dbxApi.putFile(fileToUpload, sensorDbFileIs, sensorDbFile.length(), null,
+//            null);
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(PLATYS_SERVER_PREFS,
+                Context.MODE_PRIVATE);
+        String accessToken = sharedPreferences.getString(PREFS_DBX_ACCESS_TOKEN, "");
+        DbxClientFactory.init(accessToken);
+
+        FileMetadata fileMetadata = DbxClientFactory.getClient().files().uploadBuilder(fileToUpload)
+                .withMode(WriteMode.OVERWRITE)
+                .uploadAndFinish(sensorDbFileIs);
+        Log.i(TAG, "Synced file revision: " + fileMetadata.getRev());
         syncSuccess = 1;
-      } else {
-        Log.i(TAG, "Not syncing; dropbox account not linked.");
-      }
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (DropboxException e) {
+//      } else {
+//        Log.i(TAG, "Not syncing; dropbox account not linked.");
+//      }
+    } catch (DbxException | IOException e) {
       e.printStackTrace();
     } finally {
       if (sensorDbFileIs != null) {

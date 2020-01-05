@@ -74,7 +74,7 @@ public class PlatysService extends Service {
       String task = intent.getAction();
 
       if (!runningTasks.containsKey(task) && !pendingTasks.containsKey(task)) {
-        Log.i(TAG, "Starting PlatysSerice for action: " + task);
+        Log.i(TAG, "Starting PlatysService for action: " + task);
 
         if (pendingTasks.isEmpty() && !runningTasks.containsKey(PlatysTask.SENSE)
             && !runningTasks.containsKey(PlatysTask.SYNC)

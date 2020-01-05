@@ -2,17 +2,21 @@ package edu.ncsu.mas.platys.android.sensor.types;
 
 import java.sql.SQLException;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
 
+import edu.ncsu.mas.platys.android.PlatysReceiver;
 import edu.ncsu.mas.platys.android.sensor.PlatysSensor;
 import edu.ncsu.mas.platys.android.sensor.SensorDbHelper;
 import edu.ncsu.mas.platys.common.sensor.PlatysCommonSensor;
@@ -50,7 +54,6 @@ public class GpsSensor implements PlatysSensor {
 
     mMsgToPoller = mHandler.obtainMessage(PlatysSensor.MSG_FROM_SENSOR);
     mMsgToPoller.arg1 = mSensorIndex;
-
     mLocMgr = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
   }
 
@@ -69,8 +72,12 @@ public class GpsSensor implements PlatysSensor {
     storeLastKnownLocation();
 
     mLocListener = new GpsListener();
-    mLocMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE,
-        mLocListener);
+    try {
+        mLocMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE,
+                mLocListener);
+    } catch(SecurityException e){
+        Log.i(TAG, "Cannot start GPS scan. User denied permission");
+    }
   }
 
   @Override
